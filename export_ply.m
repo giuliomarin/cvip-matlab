@@ -24,7 +24,7 @@ function export_ply( pointCloud, filePath, colorMap )
 %% Script
 
 % Check input format
-if (    size(pointCloud,2) < 3 || ...
+if (size(pointCloud,2) < 3 || ...
         size(pointCloud,2) > 6 || ...
         size(pointCloud,2) == 5)
     fprintf('Input format not valid\n')
@@ -36,12 +36,7 @@ idx = ~isnan(pointCloud(:,3));
 totNum = sum(idx);
 
 % Color map according to z (default grayscale)
-if( size(pointCloud,2) == 3 )
-    if (nargin == 2)
-        figure
-        colorMap = gray; % Default map
-        close
-    end
+if (size(pointCloud,2) == 3 && nargin == 3)
     figure
     colors = colormap(colorMap);
     close
@@ -62,16 +57,25 @@ fprintf(fid,'element vertex %i\n',totNum);
 fprintf(fid,'property float x\n');
 fprintf(fid,'property float y\n');
 fprintf(fid,'property float z\n');
-fprintf(fid, 'property uchar red\n');
-fprintf(fid, 'property uchar green\n');
-fprintf(fid, 'property uchar blue\n');
+
+% Color information
+if (size(pointCloud,2) > 3 || nargin == 3)
+    fprintf(fid, 'property uchar red\n');
+    fprintf(fid, 'property uchar green\n');
+    fprintf(fid, 'property uchar blue\n');
+end
+
 fprintf(fid,'end_header\n');
 
 % Round off color columns and make sure they are uint8
-pointCloud(:,4:end) = uint8(round(pointCloud(:,4:end)));
+if( size(pointCloud,2) > 3)
+    pointCloud(:,4:end) = uint8(round(pointCloud(:,4:end)));
+end
 
 % Write data points to file
-if (size(pointCloud,2) == 4) % Greyscale
+if (size(pointCloud,2) == 3) % No color
+    fprintf(fid,'%.5f %.5f %.5f\n',pointCloud(idx,:)');
+elseif (size(pointCloud,2) == 4) % Greyscale
     fprintf(fid,'%.5f %.5f %.5f %u %u %u\n',[pointCloud(idx,1:3), pointCloud(idx,4), pointCloud(idx,4), pointCloud(idx,4)]');
 elseif (size(pointCloud,2) == 6)  % Color
     fprintf(fid,'%.5f %.5f %.5f %u %u %u\n',pointCloud(idx,:)');
