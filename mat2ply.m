@@ -1,7 +1,9 @@
-function export_ply( pointCloud, filePath, colorMap )
-% EXPORT_PLY( pointCloud, filePath, colorMap )
+function mat2ply( pointCloud, filePath, colorMap )
+% MAT2PLY( pointCloud, filePath, colorMap )
 %
 % Converts 3D point cloud (x,y,z) to '.ply' format.
+%
+% INPUT
 %
 % pointCloud:	3D array of point cloud coordinates x,y,z (N x 3).
 %               The point cloud can have additional columns for the
@@ -81,6 +83,7 @@ elseif (size(pointCloud,2) == 6)  % Color
     fprintf(fid,'%.5f %.5f %.5f %u %u %u\n',pointCloud(idx,:)');
 end
 
+% Close file
 fclose(fid);
 
 end

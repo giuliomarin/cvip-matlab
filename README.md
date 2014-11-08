@@ -8,7 +8,16 @@ Create ply point cloud
 
 Converts 3D point cloud (x,y,z) to '.ply' format. The point cloud can have additional columns for the color information.
 
-File: [export_ply.m](https://github.com/giuliomarin/cvip/blob/master/export_ply.m)
+File: [mat2ply.m](https://github.com/giuliomarin/cvip/blob/master/mat2ply.m)
+
+--------------------------------------------------------------------------------
+
+Load ply point cloud
+--------------------------------------------------------------------------------
+
+Load a '.ply' file and store 3D point cloud in a N x 3 matrix (x,y,z). If the original point cloud has also color information, this will be saved as well.
+
+File: [ply2mat.m](https://github.com/giuliomarin/cvip/blob/master/ply2mat.m)
 
 --------------------------------------------------------------------------------
 
