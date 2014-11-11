@@ -33,6 +33,7 @@ n = fscanf(fid, ['ply\n'...
     'property uchar red\n'...
     'property uchar green\n'...
     'property uchar blue\n'...
+    'property uchar alpha\n'...
     'end_header']);
 
 % Allocate output matrices
@@ -41,7 +42,7 @@ C = zeros(n,3);
 
 % Fill output matrices
 for i=1:n
-    [values,~] = fscanf(fid, '%f %f %f %d %d %d\n',6);
+    [values,~] = fscanf(fid, '%f %f %f %d %d %d %d\n',7);
     P(i,1:3) = values(1:3,1);
     C(i,1:3) = values(4:6,1);
 end
