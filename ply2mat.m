@@ -45,8 +45,8 @@ P = zeros(nPoints,3);
 C = zeros(nPoints,3);
 
 % Check if color and alpha are present
-noColor = isempty([strfind(currLine,'red') strfind(currLine,'blue') strfind(currLine,'green')]);
-noAlpha = isempty(strfind(currLine,'alpha'));
+noColor = isempty([strfind(totalLine,'red') strfind(totalLine,'blue') strfind(totalLine,'green')]);
+noAlpha = isempty(strfind(totalLine,'alpha'));
 
 % Fill output matrices. Color and alpha may not be present
 if noColor
@@ -54,7 +54,7 @@ if noColor
         [values,~] = fscanf(fid, '%f %f %f\n',3);
         P(i,1:3) = values(1:3,1);
     end
-elseif noAplha
+elseif noAlpha
     for i=1:nPoints
         [values,~] = fscanf(fid, '%f %f %f %d %d %d\n',6);
         P(i,1:3) = values(1:3,1);
