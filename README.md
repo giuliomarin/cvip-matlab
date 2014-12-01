@@ -3,6 +3,15 @@ Computer Vision and Image Processing functions and scripts
 ==============================================================================
 
 
+Fit a plane
+--------------------------------------------------------------------------------
+
+Fit a plane on a 3D point cloud (x,y,z).
+
+File: [fitplate.m](https://github.com/giuliomarin/cvip/blob/master/fitplane.m)
+
+--------------------------------------------------------------------------------
+
 Create ply point cloud
 --------------------------------------------------------------------------------
 
