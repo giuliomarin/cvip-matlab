@@ -53,18 +53,19 @@ end
 
 % Write header
 fid = fopen(filePath,'w');
-fprintf(fid,'ply\n');
-fprintf(fid,'format ascii 1.0\n');
-fprintf(fid,'element vertex %i\n',totNum);
-fprintf(fid,'property float x\n');
-fprintf(fid,'property float y\n');
-fprintf(fid,'property float z\n');
+fprintf(fid, 'ply\n');
+fprintf(fid, 'format ascii 1.0\n');
+fprintf(fid, 'element vertex %i\n',totNum);
+fprintf(fid, 'property float x\n');
+fprintf(fid, 'property float y\n');
+fprintf(fid, 'property float z\n');
 
 % Color information
 if (size(pointCloud,2) > 3 || nargin == 3)
     fprintf(fid, 'property uchar red\n');
     fprintf(fid, 'property uchar green\n');
     fprintf(fid, 'property uchar blue\n');
+    fprintf(fid, 'property uchar alpha\n');
 end
 
 fprintf(fid,'end_header\n');
@@ -76,11 +77,11 @@ end
 
 % Write data points to file
 if (size(pointCloud,2) == 3) % No color
-    fprintf(fid,'%.5f %.5f %.5f\n',pointCloud(idx,:)');
+    fprintf(fid,'%.3f %.3f %.3f\n',pointCloud(idx,:)');
 elseif (size(pointCloud,2) == 4) % Greyscale
-    fprintf(fid,'%.5f %.5f %.5f %u %u %u\n',[pointCloud(idx,1:3), pointCloud(idx,4), pointCloud(idx,4), pointCloud(idx,4)]');
+    fprintf(fid,'%.3f %.3f %.3f %u %u %u %u\n',[pointCloud(idx,1:3), pointCloud(idx,4), pointCloud(idx,4), pointCloud(idx,4), zeros(length(pointCloud),1)]');
 elseif (size(pointCloud,2) == 6)  % Color
-    fprintf(fid,'%.5f %.5f %.5f %u %u %u\n',pointCloud(idx,:)');
+    fprintf(fid,'%.3f %.3f %.3f %u %u %u %u\n',[pointCloud(idx,:), zeros(length(pointCloud),1)]');
 end
 
 % Close file
