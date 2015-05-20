@@ -46,3 +46,12 @@ Load a '.ply' file and store 3D point cloud in a N x 3 matrix (x,y,z). If the or
 File: [ply2mat.m](https://github.com/giuliomarin/cvip/blob/master/ply2mat.m)
 
 --------------------------------------------------------------------------------
+
+Back project 2D points to 3D
+--------------------------------------------------------------------------------
+
+Project a 2D depth map in the 3D space.
+
+File: [to3d.m](https://github.com/giuliomarin/cvip/blob/master/to3d.m)
+
+--------------------------------------------------------------------------------
