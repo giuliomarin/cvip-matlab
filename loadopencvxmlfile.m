@@ -10,6 +10,10 @@ function [ content ] = loadopencvxmlfile( filepath )
 % OUTPUT
 %
 % content:     Structure with data in the file.
+%
+% DEPENDENCIES
+%
+% parsexml.m
 
 % Giulio Marin
 %
