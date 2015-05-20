@@ -9,9 +9,9 @@ function mat2ply( pointCloud, filePath, colorMap )
 %               The point cloud can have additional columns for the
 %               color information:
 %               - Greyscale: N x 4 matrix with the additional column
-%                 containing the grayscale value of the points (0-256).
+%                 containing the grayscale value of the points (0-255).
 %               - RGB: N x 6 with the last three columns containing the
-%               red, green and blue values of the points (0-256).
+%               red, green and blue values of the points (0-255).
 %
 % filePath:     Path of the '.ply' file to store
 %
@@ -33,16 +33,16 @@ if (size(pointCloud,2) < 3 || ...
     return
 end
 
-% Number of valid points (i.e. z coordinate not null)
-idx = ~isnan(pointCloud(:,3));
-totNum = sum(idx);
+% Number of valid points (coordinates not null)
+pointCloud(isnan(pointCloud(:,1)) | isnan(pointCloud(:,2)) | isnan(pointCloud(:,3)), :) = [];
+totNum = size(pointCloud,1);
 
 % Color map according to z (default grayscale)
 if (size(pointCloud,2) == 3 && nargin == 3)
     figure
     colors = colormap(colorMap);
     close
-    colors = interp1(1:size(colorMap,1),colors,linspace(1,size(colorMap,1),256))*256;
+    colors = interp1((1:size(colorMap,1))-1,colors,linspace(1,size(colorMap,1),256)-1)*255;
     z = pointCloud(:,3);
     z = z - min(z);
     z = z / max(z);
@@ -77,11 +77,11 @@ end
 
 % Write data points to file
 if (size(pointCloud,2) == 3) % No color
-    fprintf(fid,'%.3f %.3f %.3f\n',pointCloud(idx,:)');
+    fprintf(fid,'%.3f %.3f %.3f\n',pointCloud');
 elseif (size(pointCloud,2) == 4) % Greyscale
-    fprintf(fid,'%.3f %.3f %.3f %u %u %u %u\n',[pointCloud(idx,1:3), pointCloud(idx,4), pointCloud(idx,4), pointCloud(idx,4), zeros(length(pointCloud),1)]');
+    fprintf(fid,'%.3f %.3f %.3f %u %u %u %u\n',[pointCloud(:,1:3), pointCloud(:,4), pointCloud(:,4), pointCloud(:,4), zeros(length(pointCloud),1)]');
 elseif (size(pointCloud,2) == 6)  % Color
-    fprintf(fid,'%.3f %.3f %.3f %u %u %u %u\n',[pointCloud(idx,:), zeros(length(pointCloud),1)]');
+    fprintf(fid,'%.3f %.3f %.3f %u %u %u %u\n',[pointCloud, zeros(length(pointCloud),1)]');
 end
 
 % Close file
