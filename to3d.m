@@ -27,8 +27,8 @@ function [ o1, o2, o3 ] = to3d( depth, K )
 o1 = NaN(numel(depth), 3);
 
 i = 1;
-for c = 1:size(depth, 2)
-    for r = 1:size(depth, 1)
+for r = 1:size(depth, 1)
+    for c = 1:size(depth, 2)
         if ~isnan(depth(r,c))
             o1(i, :) = (K \ [c-1 ; r-1; 1])' * depth(r,c);
         end
