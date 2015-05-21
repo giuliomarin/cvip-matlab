@@ -21,7 +21,7 @@ function [ content ] = loadopencvxmlfile( filepath )
 % 2015/05/15
 
 %% Parse file
-param = parseXML(filepath);
+param = parsexml(filepath);
 
 for moduleIdx = 2:2:size(param.Children, 2) - 1
         name = param.Children(moduleIdx).Name;

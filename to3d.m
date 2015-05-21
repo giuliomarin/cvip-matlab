@@ -14,6 +14,9 @@ function [ o1, o2, o3 ] = to3d( depth, K )
 %
 % o1:     (MxN)x3 matrix where each row represents a points and the columns
 %         are x, y and z coordinates. Points not valid have NaN coordinates.
+%         If also o2 and o3 are used, o1 is a vector of x components.
+% o2:     Vector of y components. (Check o1 description)
+% o3:     Vector of z components. (Check o1 description)
 
 % Giulio Marin
 %
