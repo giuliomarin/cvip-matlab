@@ -1,4 +1,4 @@
-function mat2ply( pointCloud, filePath, colorMap )
+function mat2ply( pointCloud, filePath, faces, colorMap )
 % MAT2PLY( pointCloud, filePath, colorMap )
 %
 % Converts 3D point cloud (x,y,z) to '.ply' format.
@@ -14,6 +14,10 @@ function mat2ply( pointCloud, filePath, colorMap )
 %               red, green and blue values of the points (0-255).
 %
 % filePath:     Path of the '.ply' file to store
+%
+% faces:        M x 4 matrix of faces. Each line specifies the index
+%               (starting from 0) of points representing the vertices. Can
+%               be empty. The list of points must be clockwise.
 %
 % colorMap:     (Optional) Name of colormap to use if a Nx3 matrix is given
 %               as input to pointCloud.
@@ -34,18 +38,21 @@ if (size(pointCloud,2) < 3 || ...
 end
 
 % Number of valid points (coordinates not null)
-pointCloud(isnan(pointCloud(:,1)) | isnan(pointCloud(:,2)) | isnan(pointCloud(:,3)), :) = [];
+notValid = isnan(pointCloud(:,1)) | isnan(pointCloud(:,2)) | isnan(pointCloud(:,3));
+pointCloud(notValid, :) = 0;
 totNum = size(pointCloud,1);
 
 % Color map according to z (default grayscale)
-if (size(pointCloud,2) == 3 && nargin == 3)
+if (size(pointCloud,2) == 3 && nargin == 4)
     figure
     colors = colormap(colorMap);
     close
     colors = interp1((1:size(colorMap,1))-1,colors,linspace(1,size(colorMap,1),256)-1)*255;
     z = pointCloud(:,3);
     z = z - min(z);
-    z = z / max(z);
+    if max(z) > 0
+        z = z / max(z);
+    end
     z = round(z * 255) + 1;
     colorZ = colors(z,:);
     pointCloud(:,4:6) = colorZ;
@@ -61,11 +68,16 @@ fprintf(fid, 'property float y\n');
 fprintf(fid, 'property float z\n');
 
 % Color information
-if (size(pointCloud,2) > 3 || nargin == 3)
+if (size(pointCloud,2) > 3 || nargin == 4)
     fprintf(fid, 'property uchar red\n');
     fprintf(fid, 'property uchar green\n');
     fprintf(fid, 'property uchar blue\n');
     fprintf(fid, 'property uchar alpha\n');
+end
+
+if ~isempty(faces)
+    fprintf(fid, 'element face %i\n', size(faces,1));
+    fprintf(fid, 'property list uchar int vertex_index\n');
 end
 
 fprintf(fid,'end_header\n');
@@ -82,6 +94,12 @@ elseif (size(pointCloud,2) == 4) % Greyscale
     fprintf(fid,'%.3f %.3f %.3f %u %u %u %u\n',[pointCloud(:,1:3), pointCloud(:,4), pointCloud(:,4), pointCloud(:,4), zeros(length(pointCloud),1)]');
 elseif (size(pointCloud,2) == 6)  % Color
     fprintf(fid,'%.3f %.3f %.3f %u %u %u %u\n',[pointCloud, zeros(length(pointCloud),1)]');
+end
+
+% TODO: deal with faces with 3 points.
+if ~isempty(faces)
+    faces = [4 * ones(size(faces,1),1), faces];
+    fprintf(fid,'%i %i %i %i %i\n',faces');
 end
 
 % Close file
