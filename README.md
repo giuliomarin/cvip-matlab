@@ -3,6 +3,16 @@ Computer Vision and Image Processing functions and scripts
 ==============================================================================
 
 
+
+Collect row, column and value of the selected points
+--------------------------------------------------------------------------------
+
+Collect row, column and value of the selected points in an image given the handle to the figure.
+
+File: [collectcursorinfo.m](https://github.com/giuliomarin/cvip/blob/master/collectcursorinfo.m)
+
+--------------------------------------------------------------------------------
+
 Convert disparity map to depth map and vice versa
 --------------------------------------------------------------------------------
 
