@@ -3,6 +3,15 @@ Computer Vision and Image Processing functions and scripts
 ==============================================================================
 
 
+Convert disparity map to depth map and vice versa
+--------------------------------------------------------------------------------
+
+Compute a depth map given a disparity map and the product baseline * focal length. It can be used also to compute the opposite, given a depth map, compute the disparity map.
+
+File: [disparity2depth.m](https://github.com/giuliomarin/cvip/blob/master/disparity2depth.m)
+
+--------------------------------------------------------------------------------
+
 Fit a plane
 --------------------------------------------------------------------------------
 
@@ -12,7 +21,7 @@ File: [fitplate.m](https://github.com/giuliomarin/cvip/blob/master/fitplane.m)
 
 --------------------------------------------------------------------------------
 
-Load data in the xml file stored with OpenCV.
+Load data in the xml file stored with OpenCV
 --------------------------------------------------------------------------------
 Create a structure with all the entries in the xml file. Deal with Mat, string and single numbers.
 Each entry in the structure has the name of the variable in the XML file.
