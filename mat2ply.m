@@ -75,7 +75,7 @@ if (size(pointCloud,2) > 3 || nargin == 4)
     fprintf(fid, 'property uchar alpha\n');
 end
 
-if ~isempty(faces)
+if nargin > 2 && ~isempty(faces)
     fprintf(fid, 'element face %i\n', size(faces,1));
     fprintf(fid, 'property list uchar int vertex_index\n');
 end
@@ -97,7 +97,7 @@ elseif (size(pointCloud,2) == 6)  % Color
 end
 
 % TODO: deal with faces with 3 points.
-if ~isempty(faces)
+if nargin > 2 && ~isempty(faces)
     faces = [4 * ones(size(faces,1),1), faces];
     fprintf(fid,'%i %i %i %i %i\n',faces');
 end
