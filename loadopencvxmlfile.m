@@ -32,11 +32,11 @@ for moduleIdx = 2:2:size(param.Children, 2) - 1
             dataRaw = param.Children(moduleIdx).Children(8).Children.Data;
             data = reshape(strread(dataRaw, '%f'), [cols, rows])';
         else
-            % Is a single value
+            % Is a single value or a sequence
             % If not a string, convert to double
             data = param.Children(moduleIdx).Children.Data;
             if ~strcmp(data(1), '"')
-                data = str2double(param.Children(moduleIdx).Children.Data);
+                data = str2num(param.Children(moduleIdx).Children.Data);
             end
         end
         

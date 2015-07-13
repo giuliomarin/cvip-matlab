@@ -1,5 +1,5 @@
-function [ cr, val ] = collectcursorinfo(h)
-% COLLECTCURSORINFO( h )
+function [ rc, val ] = collectcursorinfo(h)
+% [rc, val] = COLLECTCURSORINFO( h )
 %
 % Collect column, row and value of the selected points in an image.
 %
@@ -9,7 +9,7 @@ function [ cr, val ] = collectcursorinfo(h)
 %
 % OUTPUT
 %
-% cr: matrix of columns and rows of the selected points.
+% rc: matrix of rows and columns of the selected points.
 %
 % val: vector of values of the selected points.
 
@@ -19,7 +19,7 @@ function [ cr, val ] = collectcursorinfo(h)
 % 2015/05/21
 
 %% Prepare output
-cr = [];
+rc = [];
 val = [];
 
 % Set cursor mode
@@ -43,7 +43,7 @@ c = pos(1);
 r = pos(2);
 
 % Add values
-cr(end+1,:) = [c,r];
+rc(end+1,:) = [r,c];
 val(end+1,:) = img(r,c);
 
 output_txt = {['[', num2str(r), ',', num2str(c),']'],num2str(img(r,c))};
