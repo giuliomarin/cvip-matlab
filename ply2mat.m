@@ -1,5 +1,5 @@
 function [ P, C ] = ply2mat( filePath )
-% PLY2MAP( filePath )
+% [ P, C ] = PLY2MAP( filePath )
 %
 % Converts '.ply' format file to 3D point cloud (x,y,z).
 %

@@ -1,5 +1,5 @@
 function [ content ] = loadopencvxmlfile( filepath )
-% LOADOPENCVXMLFILE( filepath )
+% [content] = LOADOPENCVXMLFILE( filepath )
 %
 % Load data in the xml file stored with OpenCV.
 %

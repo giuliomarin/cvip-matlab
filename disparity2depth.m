@@ -1,5 +1,5 @@
 function [ depth ] = disparity2depth( disparity, baselinefocal )
-% DISPARITY2DEPTH( disparity, baselinefocal )
+% [ depth ] = DISPARITY2DEPTH( disparity, baselinefocal )
 %
 % Compute a depth map given a disparity map and the product baseline * focal length.
 % It can be used also to compute the opposite, given a depth map, compute

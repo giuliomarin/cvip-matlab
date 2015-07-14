@@ -1,5 +1,5 @@
 function [ o1, o2, o3 ] = to3d( depth, K )
-% TO3D( depth, K )
+% [ o1, o2, o3 ] = TO3D( depth, K )
 %
 % Project a 2D depth map in the 3D space.
 %
