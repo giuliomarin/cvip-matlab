@@ -13,6 +13,15 @@ File: [collectcursorinfo.m](https://github.com/giuliomarin/cvip/blob/master/coll
 
 --------------------------------------------------------------------------------
 
+Create a video from a list of images
+--------------------------------------------------------------------------------
+
+Create a video from a list of black and white or colored images, with the option to specify the frame rate and whether to compress the video or not.
+
+File: [createvideofromimages.m](https://github.com/giuliomarin/cvip/blob/master/createvideofromimages.m)
+
+--------------------------------------------------------------------------------
+
 Convert disparity map to depth map and vice versa
 --------------------------------------------------------------------------------
 
