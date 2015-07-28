@@ -42,18 +42,24 @@ classdef stereobm < handle
         % Compute disparity map between left and right.
         function [disparity, costVolume] = compute(self, left, right)
             
+            % Convert to 1 channel image.
+            if size(left, 3) > 1
+                left = rgb2gray(left);
+                right = rgb2gray(right);
+            end
+            
             % Convert images.
-            frameMaster = double(left);
-            frameSlave = double(right);
+            left = double(left);
+            right = double(right);
             
             % Cost volume.
-            costVolume = zeros(size(frameMaster, 1), size(frameMaster, 2), self.maxDisparity - self.minDisparity + 1);
+            costVolume = zeros(size(left, 1), size(left, 2), self.maxDisparity - self.minDisparity + 1);
             
             for dispIdx = self.minDisparity : self.maxDisparity
                 
                 % Compute matching cost.
-                circShiftFrameSlave = circshift(frameSlave, [0, dispIdx]);
-                singlePixelCost = abs(circShiftFrameSlave - frameMaster);
+                circShiftFrameSlave = circshift(right, [0, dispIdx]);
+                singlePixelCost = abs(circShiftFrameSlave - left);
                 
                 % Aggregate matching cost.
                 costVolume(:, :, dispIdx - self.minDisparity + 1) = ...
@@ -64,9 +70,6 @@ classdef stereobm < handle
             % Compute disparity = index of the minimum cost.
             [minCost, idx] = min(costVolume, [], 3);
             disparity = self.minDisparity + idx - 1;
-            
-            % Remove left band
-            disparity(:, 1 : self.maxDisparity) = NaN;
             
             % Left-right check
             if self.leftRightCheck
