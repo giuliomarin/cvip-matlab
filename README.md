@@ -81,6 +81,7 @@ Compute Block Matching
 Class to produce a disparity map by computing stereo block matching given a couple of rectified images.
 
 File: [stereobm.m](https://github.com/giuliomarin/cvip/blob/master/stereobm.m)
+Sample: [test_stereobm.m](https://github.com/giuliomarin/cvip/blob/master/samples/stereobm.m)
 
 --------------------------------------------------------------------------------
 
