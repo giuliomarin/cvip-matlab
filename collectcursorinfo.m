@@ -28,6 +28,8 @@ set(dcm_obj, 'UpdateFcn', @gatherxyfunction, 'Enable', 'on')
 
 fprintf('Press enter to end the collection ')
 pause
+rc(1,:) = [];
+val(1) = [];
 fprintf('-> done.\n')
 
 %% Auxiliary function
@@ -46,7 +48,7 @@ r = pos(2);
 rc(end+1,:) = [r,c];
 val(end+1,:) = img(r,c);
 
-output_txt = {['[', num2str(r), ',', num2str(c),']'],num2str(img(r,c))};
+output_txt = {['[', num2str(r), ',', num2str(c),']'],num2str(img(r,c)),['n=', num2str(numel(val))]};
 end
 
 end
