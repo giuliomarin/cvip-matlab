@@ -1,8 +1,17 @@
 ==============================================================================
-Computer Vision and Image Processing functions and scripts 
+Computer Vision and Image Processing functions and scripts
 ==============================================================================
 
 
+
+Automatically crop valid ROI
+--------------------------------------------------------------------------------
+
+Assuming the pixel (1,1) has the color of the border to remove from one image, crop the image returning only the rectangle containing valid pixels.
+
+File: [autocropimage.m](https://github.com/giuliomarin/cvip/blob/master/autocropimage.m)
+
+--------------------------------------------------------------------------------
 
 Collect row, column and value of the selected points
 --------------------------------------------------------------------------------
