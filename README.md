@@ -49,6 +49,24 @@ File: [fitplate.m](https://github.com/giuliomarin/cvip/blob/master/fitplane.m)
 
 --------------------------------------------------------------------------------
 
+Read 4 channels PNG image as float matrix
+--------------------------------------------------------------------------------
+
+Interpret RGB and alpha channels as 32 bits elements of a matrix.
+
+File: [imread32f.m](https://github.com/giuliomarin/cvip/blob/master/imread32f.m)
+
+--------------------------------------------------------------------------------
+
+Save a float matrix in a 4 channels PNG image
+--------------------------------------------------------------------------------
+
+Save a 32 bit image (float) into a PNG image using RGB and alpha channel.
+
+File: [imwrite32f.m](https://github.com/giuliomarin/cvip/blob/master/imwrite32f.m)
+
+--------------------------------------------------------------------------------
+
 Load data in the xml file stored with OpenCV
 --------------------------------------------------------------------------------
 Create a structure with all the entries in the xml file. Deal with Mat, string and single numbers.
