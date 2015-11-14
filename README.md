@@ -31,6 +31,15 @@ File: [createvideofromimages.m](https://github.com/giuliomarin/cvip/blob/master/
 
 --------------------------------------------------------------------------------
 
+Save data in a OpenCV XML file.
+--------------------------------------------------------------------------------
+
+Save data according to OpenCV XML format. Th input is a struct with multiple fields that can be strings, numbers or matrices.
+
+File: [data2opencvxml.m](https://github.com/giuliomarin/cvip/blob/master/data2opencvxml.m)
+
+--------------------------------------------------------------------------------
+
 Convert disparity map to depth map and vice versa
 --------------------------------------------------------------------------------
 
