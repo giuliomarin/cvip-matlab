@@ -25,6 +25,8 @@ Create a video from a list of black and white or colored images, with the option
 
 File: [createvideofromimages.m](https://github.com/giuliomarin/cvip/blob/master/createvideofromimages.m)
 
+Sample: [test_createvideofromimages.m](https://github.com/giuliomarin/cvip/blob/master/samples/test_createvideofromimages.m)
+
 -
 
 **Save data in a OpenCV XML file**

@@ -11,7 +11,7 @@ function createvideofromimages( img, filename, fps, compressed )
 %
 % fps:        Number of frames per second (30 by default).
 %
-% compressed: Boolean value, true if the video has to be compressed.
+% compressed: Boolean value, true if the video has to be compressed (false by default).
 
 % Giulio Marin
 % giulio.marin@me.com
@@ -31,7 +31,7 @@ if nargin < 4
 end
 
 if compressed
-    profile = 'MPEG-4';
+    profile = 'Motion JPEG AVI';
 else
     if size(img, 3) == 3
         profile = 'Uncompressed AVI';
