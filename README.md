@@ -69,10 +69,20 @@ File: [imwrite32f.m](https://github.com/giuliomarin/cvip/blob/master/imwrite32f.
 
 Load data in the xml file stored with OpenCV
 --------------------------------------------------------------------------------
+
 Create a structure with all the entries in the xml file. Deal with Mat, string and single numbers.
 Each entry in the structure has the name of the variable in the XML file.
 
 File: [loadopencvxmlfile.m](https://github.com/giuliomarin/cvip/tree/master/loadopencvxmlfile.m)
+
+--------------------------------------------------------------------------------
+
+Load matrix stored in a binary file
+--------------------------------------------------------------------------------
+
+Load a matrix stored in a binary file, given rows columns and type of tha data (e.g. 'float').
+
+File: [loadrawmat.m](https://github.com/giuliomarin/cvip/tree/master/loadrawmat.m)
 
 --------------------------------------------------------------------------------
 
