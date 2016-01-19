@@ -92,6 +92,8 @@ Converts 3D point cloud (x,y,z) to '.ply' format. The point cloud can have addit
 
 File: [mat2ply.m](https://github.com/giuliomarin/cvip/blob/master/mat2ply.m)
 
+Sample: [test_stereobm.m](https://github.com/giuliomarin/cvip/blob/master/samples/test_createply.m)
+
 -
 
 **Otsu's segmentation method with 3 gray levels**

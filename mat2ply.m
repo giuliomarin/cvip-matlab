@@ -1,5 +1,5 @@
 function mat2ply( pointCloud, filePath, faces, colorMap )
-% MAT2PLY( pointCloud, filePath, colorMap )
+% MAT2PLY( pointCloud, filePath, faces, colorMap )
 %
 % Converts 3D point cloud (x,y,z) to '.ply' format.
 %
@@ -15,9 +15,10 @@ function mat2ply( pointCloud, filePath, faces, colorMap )
 %
 % filePath:     Path of the '.ply' file to store
 %
-% faces:        M x 4 matrix of faces. Each line specifies the index
-%               (starting from 0) of points representing the vertices. Can
-%               be empty. The list of points must be clockwise.
+% faces:        (Optional) M x 4 matrix of faces. Each line specifies the
+%               index (starting from 0) of points representing the
+%               vertices. Can be empty. The list of points must be
+%               clockwise.
 %
 % colorMap:     (Optional) Name of colormap to use if a Nx3 matrix is given
 %               as input to pointCloud.
@@ -40,6 +41,9 @@ end
 % Number of valid points (coordinates not null)
 notValid = isnan(pointCloud(:,1)) | isnan(pointCloud(:,2)) | isnan(pointCloud(:,3));
 pointCloud(notValid, :) = 0;
+if nargin < 3 || isempty(faces)
+    pointCloud(notValid, :) = [];
+end
 totNum = size(pointCloud,1);
 
 % Color map according to z (default grayscale)

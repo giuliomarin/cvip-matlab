@@ -29,7 +29,7 @@ o1 = NaN(numel(depth), 3);
 i = 1;
 for r = 1:size(depth, 1)
     for c = 1:size(depth, 2)
-        if ~isnan(depth(r,c))
+        if ~(isnan(depth(r,c)) || isinf(depth(r,c)))
             o1(i, :) = (K \ [c-1 ; r-1; 1])' * depth(r,c);
         end
         i = i + 1;
