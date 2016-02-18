@@ -1,28 +1,29 @@
 classdef stereobm < handle
-% STEREOBM
-%
-% Compute block matching given a couple of rectified images and produce the
-% disparity map.
-%
-% PROPERTIES
-%
-% minDisparity:   Minimum disparity.
-% maxDisparity:   Maximum disparity.
-% winSize:        Window size [width height].
-%
-% subpixel:       0 disabled, 1 enabled
-% leftRightCheck: 0 disabled, 1 enabled
-%
-% badMatch:       Structure with masks of bad match.
-%
-% METHODS
-%
-% compute(left, right):     compute block matching for input stereo images.
-
-% Giulio Marin
-%
-% giulio.marin@me.com
-% 2015/05/15
+    % STEREOBM
+    %
+    % Compute block matching given a couple of rectified images and produce the
+    % disparity map.
+    %
+    % PROPERTIES
+    %
+    % minDisparity:   Minimum disparity.
+    % maxDisparity:   Maximum disparity.
+    % winSize:        Window size [width height].
+    %
+    % upsample:       0 disabled, >0 enabled
+    % subpixel:       0 disabled, 1 enabled
+    % leftRightCheck: 0 disabled, 1 enabled
+    %
+    % badMatch:       Structure with masks of bad match.
+    %
+    % METHODS
+    %
+    % compute(left, right):     compute block matching for input stereo images.
+    
+    % Giulio Marin
+    %
+    % giulio.marin@me.com
+    % 2015/05/15
     
     properties
         minDisparity = 0;
@@ -30,6 +31,7 @@ classdef stereobm < handle
         winSize = [0 0]
         
         % Refinement
+        upsample = 0
         subpixel = 0
         leftRightCheck = 0
         
@@ -51,6 +53,16 @@ classdef stereobm < handle
             % Convert images.
             left = double(left);
             right = double(right);
+            
+            % Upsample images
+            if self.upsample > 0
+                self.upsample = round(self.upsample);
+                self.minDisparity = self.minDisparity * self.upsample;
+                self.maxDisparity = self.maxDisparity * self.upsample;
+                self.winSize = self.winSize * self.upsample;
+                left = imresize(left, self.upsample);
+                right = imresize(right, self.upsample);
+            end
             
             % Cost volume.
             costVolume = zeros(size(left, 1), size(left, 2), self.maxDisparity - self.minDisparity + 1);
@@ -79,6 +91,11 @@ classdef stereobm < handle
             % Subpixel.
             if self.subpixel
                 disparity = computeSubpixel(self, disparity, costVolume);
+            end
+            
+            % Downsample images
+            if self.upsample > 0
+                disparity = imresize(disparity, 1 / self.upsample, 'nearest') / self.upsample;
             end
         end
     end
