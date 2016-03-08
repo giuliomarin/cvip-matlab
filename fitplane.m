@@ -1,5 +1,5 @@
-function [a,b,c,d]=fitplane(xyz)
-% FITPLANE( filePath )
+function [a,b,c,d] = fitplane(xyz)
+% [a,b,c,d] = FITPLANE( filePath )
 %
 % Fit a plane on a 3D point cloud (x,y,z).
 %
