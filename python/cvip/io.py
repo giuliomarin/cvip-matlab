@@ -1,6 +1,7 @@
 import numpy as np
 import cv2
 
+
 def imread32f(imgPath):
     """
     Load a float mat stored in a png file
@@ -17,6 +18,7 @@ def imread32f(imgPath):
 
     return imFloat
 
+
 def imwrite32f(imgPath, img):
     """
     Write a float matrix in a png file
@@ -27,3 +29,7 @@ def imwrite32f(imgPath, img):
     imgToWrite = np.zeros((480, 640, 4), np.uint8)
     imgToWrite.data = img.data
     cv2.imwrite(imgPath, imgToWrite)
+
+
+if __name__ == '__main__':
+    print 'done'
