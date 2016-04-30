@@ -4,3 +4,6 @@
 
 *.m~
 *.asv
+
+# PyCharm
+.idea
