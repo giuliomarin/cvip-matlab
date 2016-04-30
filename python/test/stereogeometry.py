@@ -41,6 +41,42 @@ print 'FOV_H = %.1f degrees' % (FOV_H / np.pi * 180)
 print 'FOV_V = %.1f degrees' % (FOV_V / np.pi * 180)
 
 ######################
+# Minimum distance common FOV
+######################
+
+MIN_D = []
+for b in BASELINE:
+    MIN_D.append(np.tan(np.pi / 2 - FOV_H / 2) * b / 2)
+
+print '\n------------------'
+print 'Minimum distance common FOV'
+print '\n'.join(['%d [mm] (baseline %d [mm])' % dmin for dmin in zip(MIN_D, BASELINE)])
+
+######################
+# Percentage overlapping FOV
+######################
+
+Z_VEC = np.arange(300, 2001, 10)
+
+plt.figure()
+for b in BASELINE:
+    percFov = 1 - b * FOCAL_H_PXL / (Z_VEC * SIZE_SENSOR[1])
+    currP = plt.plot(Z_VEC, percFov, label = ('Baseline=%d' % b))
+
+plt.title('Percentage common FoV')
+plt.xlabel('Distance [mm]')
+plt.ylabel('Common FoV [%]')
+plt.legend(loc='upper left')
+plt.xlim((Z_VEC[0], Z_VEC[-1]))
+plt.grid()
+for l in plt.gca().lines:
+    plt.setp(l, linewidth = LINE_W)
+for l in plt.gca().get_legend().get_lines():
+    plt.setp(l, linewidth = LINE_W)
+plt.show()
+# plt.savefig('/Users/giulio/Desktop/commonfov.png', transparent = True)
+
+######################
 # Depth resolution
 ######################
 
@@ -63,7 +99,7 @@ for l in plt.gca().lines:
 for l in plt.gca().get_legend().get_lines():
     plt.setp(l, linewidth = LINE_W)
 plt.show()
-plt.savefig('/Users/giulio/Desktop/depthres.png', transparent = True)
+# plt.savefig('/Users/giulio/Desktop/depthres.png', transparent = True)
 
 ######################
 # Disparity vs Depth
@@ -87,7 +123,7 @@ for l in plt.gca().lines:
 for l in plt.gca().get_legend().get_lines():
     plt.setp(l, linewidth = LINE_W)
 plt.show()
-plt.savefig('/Users/giulio/Desktop/disparitydepth.png', transparent = True)
+# plt.savefig('/Users/giulio/Desktop/disparitydepth.png', transparent = True)
 
 plt.ioff()
 plt.show()
