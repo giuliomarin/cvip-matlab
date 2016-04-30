@@ -137,20 +137,4 @@ for i in xrange(len(objPoints)):
     mean_error += error
 
 print 'Reprojection error: %.3f [pixel]' % (mean_error / len(objPoints))
-
-##########################
-# Undistortion
-##########################
-
-print '\nTest undistortion'
-img = cv2.imread(images[0])
-h, w = gray.shape[:2]
-Knew, roi = cv2.getOptimalNewCameraMatrix(K, D, (w, h), 1, (w, h))
-print 'Knew:\n%s' % tostr(Knew)
-mapx, mapy = cv2.initUndistortRectifyMap(K, D, None, Knew, (img.shape[1], img.shape[0]), 5)
-imgund = cv2.remap(img, mapx, mapy, cv2.INTER_LINEAR)
-cv2.imwrite(imgfilebase % 'imgund.png', imgund)
-bothimg = resizeimgw(np.hstack((img, imgund)), 1024)
-cv2.imshow('original & undistorted', bothimg)
 cv2.waitKey(0)
-
