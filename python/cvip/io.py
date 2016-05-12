@@ -1,5 +1,5 @@
-import numpy as np
 import cv2
+import numpy as np
 
 
 def imread32f(imgPath):
@@ -9,12 +9,13 @@ def imread32f(imgPath):
         \return : matrix values
     """
     ## Read the png image
-    img2 = cv2.imread(imgPath, -1)
-
+    img = cv2.imread(imgPath, -1)
+    if img is None:
+        raise IOError('File not found: %s' % imgPath)
     # Convert it to float
-    imSize = (img2.shape[0],img2.shape[1])
+    imSize = (img.shape[0],img.shape[1])
     imFloat = np.zeros(imSize, np.float32)
-    imFloat.data = img2.data
+    imFloat.data = img.data
 
     return imFloat
 
