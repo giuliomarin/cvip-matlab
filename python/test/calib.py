@@ -10,10 +10,10 @@ import sys
 imgfilebase = '/Users/giulio/Dropbox (Personal)/Temporary/calibration/0/%s'
 imgfile = imgfilebase % 'img0_*.png'
 N_CHECKERS = (10, 8)  # (points_per_row,points_per_colum)
+SIZE_CHECKERS = 20.0  # mm
 
 # Visualization
 H_IMGS = 480  # -1 for original size
-
 
 #########################
 # Functions
@@ -54,6 +54,7 @@ if len(images) == 0:
 # Prepare object points
 objp = np.zeros((np.prod(N_CHECKERS), 3), np.float32)
 objp[:, :2] = np.mgrid[0:N_CHECKERS[0], 0:N_CHECKERS[1]].T.reshape(-1, 2)
+objp *= SIZE_CHECKERS;
 
 # Arrays to store object points and image points from all the images.
 objPoints = []  # 3d point in real world space
@@ -69,7 +70,7 @@ criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 60, 0.01)
 for fname in images:
     print 'Image: %s' % fname,
     # load image and convert to grayscale
-    img = cv2.imread(fname)
+    img = cv2.imread(fname, cv2.IMREAD_UNCHANGED)
     if len(img.shape) > 2:
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     else:
@@ -78,7 +79,8 @@ for fname in images:
     cv2.imshow('curr img', img)
 
     # Find the chess board corners
-    ret, corners = cv2.findChessboardCorners(gray, N_CHECKERS, None, flags = cv2.CALIB_CB_ADAPTIVE_THRESH + cv2.CALIB_CB_FILTER_QUADS)
+    ret, corners = cv2.findChessboardCorners(gray, N_CHECKERS, None,
+                                             flags = cv2.CALIB_CB_ADAPTIVE_THRESH + cv2.CALIB_CB_FILTER_QUADS)
 
     # If not found skip impage
     if ret is not True:
@@ -97,14 +99,15 @@ for fname in images:
         # Draw and display the corners
         cv2.drawChessboardCorners(img, N_CHECKERS, corners, ret)
 
-        img = resizeimgh(img, H_IMGS)
-        cv2.imshow('curr img', img)
+        imgToShow = resizeimgh(img, H_IMGS)
+        cv2.imshow('curr img', imgToShow)
 
     # Draw all the corners found so far
     imgAll = np.zeros(img.shape, dtype = np.uint8)
+    pointSize = int(round(imgAll.shape[1] / 350.0))
     for f in imgPoints:
         for p in f:
-            cv2.circle(imgAll, tuple(p[0]), 2, (255, 255, 255), -1)
+            cv2.circle(imgAll, tuple(p[0]), pointSize, (255, 255, 255), -1)
     imgAll = resizeimgh(imgAll, H_IMGS)
     cv2.imshow('all points', imgAll)
     cv2.waitKey(1)
