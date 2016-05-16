@@ -80,14 +80,12 @@ def parsefile(filepath):
         elif cmd == 'directional':
             obj = Directional(np.asarray([float(line[1]), float(line[2]), float(line[3])]),  # direction
                               np.asarray([float(line[4]), float(line[5]), float(line[6])]),  # color
-                              1.0,  # intensity
                               attenuation)  # attenuation
             obj.applytransform(transfstack[-1])
             light.append(obj)
         elif cmd == 'point':
             obj = Point(np.asarray([float(line[1]), float(line[2]), float(line[3])]),  # position
                         np.asarray([float(line[4]), float(line[5]), float(line[6])]),  # color
-                        1.0,  # intensity
                         attenuation)  # attenuation
             obj.applytransform(transfstack[-1])
             light.append(obj)
@@ -189,10 +187,9 @@ class Light:
 
 
 class Directional(Light):
-    def __init__(self, direction, color, intensity, attenuation = np.asarray([1.0, 0.0, 0.0])):
+    def __init__(self, direction, color, attenuation = np.asarray([1.0, 0.0, 0.0])):
         self.direction = normalize(np.asarray(direction))
         self.color = np.asarray(color)
-        self.intensity = np.asarray(intensity)
         self.attenuation = attenuation
 
     def getdirection(self, p):
@@ -206,10 +203,9 @@ class Directional(Light):
 
 
 class Point(Light):
-    def __init__(self, position, color, intensity, attenuation = np.asarray([1.0, 0.0, 0.0])):
+    def __init__(self, position, color, attenuation = np.asarray([1.0, 0.0, 0.0])):
         self.position = np.asarray(position)
         self.color = np.asarray(color)
-        self.intensity = np.asarray(intensity)
         self.attenuation = attenuation
 
     def getdirection(self, p):
@@ -246,7 +242,6 @@ class Triangle(Object):
         self.emission = np.asarray(emission)
         self.specular = np.asarray(specular)
         self.shininess = shininess
-        self.reflection = 0.0
 
     def getnormal(self, ray):
         return self.normal
@@ -295,7 +290,6 @@ class Plane(Object):
         self.emission = np.asarray(emission)
         self.specular = np.asarray(specular)
         self.shininess = shininess
-        self.reflection = 0.0
 
     def intersect(self, ray):
         denom = np.dot(ray[1], self.normal)
@@ -324,7 +318,6 @@ class Checkerboard(Object):
         self.emission = np.asarray(emission)
         self.specular = np.asarray(specular)
         self.shininess = shininess
-        self.reflection = 0.0
 
     def intersect(self, ray):
         denom = np.dot(ray[1], self.normal)
@@ -354,7 +347,6 @@ class Sphere(Object):
         self.emission = np.asarray(emission)
         self.specular = np.asarray(specular)
         self.shininess = shininess
-        self.reflection = 0.0
 
         # Transformation
         self.M = np.asmatrix(np.eye(4, dtype = np.float32))
@@ -400,7 +392,7 @@ class Sphere(Object):
         point = np.asmatrix(np.append(point, 1)).T
         point_dist = np.asarray(np.dot(self.Minv, point).T)[0][0:3]
         normal_dist = np.asmatrix(np.append(normalize(point_dist - self.center), 0)).T
-        normal = np.asarray(np.dot(self.Minv.T, normal_dist).T)[0][0:3]
+        normal = normalize(np.asarray(np.dot(self.Minv.T, normal_dist).T)[0][0:3])
         return normal
 
     def applytransform(self, M):
@@ -452,7 +444,7 @@ def trace_ray(ray, scene, light):
         H = normalize(l_ray[1] - ray[1])
         if r == np.inf:
             r = 0.0
-        c_ray += l.color * l.intensity / (l.attenuation[0] + l.attenuation[1] * r + l.attenuation[2] * r ** 2) * \
+        c_ray += l.color / (l.attenuation[0] + l.attenuation[1] * r + l.attenuation[2] * r ** 2) * \
                  (obj.diffuse * max(np.dot(N, l_ray[1]), 0) + obj.specular * (max(np.dot(N, H), 0) ** obj.shininess))
     return obj, P, N, c_ray
 
@@ -534,7 +526,7 @@ def processstripe((scenedata, idfile, idstripe)):
             ray = (camera.eye, direction)
 
             # Reset values
-            reflection = 1.
+            reflection = np.array([1.0, 1.0, 1.0])
             col[:] = 0
 
             # Loop through initial and secondary rays.
@@ -548,7 +540,7 @@ def processstripe((scenedata, idfile, idstripe)):
                 ray = (P + N * 1e-3, normalize(ray[1] - 2 * np.dot(ray[1], N) * N))
                 depth += 1
                 col += reflection * col_ray
-                reflection *= obj.reflection
+                reflection *= obj.specular
             img[y, x, :] = np.clip(col, 0, 1)
     return img
 
@@ -558,11 +550,9 @@ if __name__ == '__main__':
     filetotest = glob.glob(filetotest_path)
     filetotestid = zip(filetotest, range(len(filetotest)))
 
-    NUM_PROCESSES = 1
-    NUM_STRIPES = 12
+    NUM_STRIPES = 4
 
-    p = Pool(NUM_PROCESSES)
-    p.map(processfile, filetotestid)
-    # processfile(filetotestid[0])
+    for datatoprocess in filetotestid:
+        processfile(datatoprocess)
 
 
