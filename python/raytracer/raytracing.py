@@ -95,7 +95,7 @@ def parsefile(filepath):
             diffuse = np.asarray([float(line[1]), float(line[2]), float(line[3])])
         elif cmd == 'specular':
             specular = np.asarray([float(line[1]), float(line[2]), float(line[3])])
-        elif cmd == 'ambient':
+        elif cmd == 'scininess':
             shininess = float(line[1])
         elif cmd == 'emission':
             emission = np.asarray([float(line[1]), float(line[2]), float(line[3])])
@@ -449,8 +449,8 @@ def trace_ray(ray, scene, light):
     return obj, P, N, c_ray
 
 
-def printbar(curr, total, size = 20, freq = 10, pre = ''):
-    if curr % freq is not 0:
+def printbar(curr, total, size = 20, freq = 5, pre = ''):
+    if (curr * 100.0 / float(total)) % freq is not 0:
         return
     num_done = int(float(curr) / float(total) * size)
     bar = pre + '['
@@ -512,8 +512,8 @@ def processstripe((scenedata, idfile, idstripe)):
     SIZE_STRIPE = (END_STRIPES - START_STRIPES) / NUM_STRIPES
     startstripe = START_STRIPES + idstripe * SIZE_STRIPE
     endstripe = START_STRIPES + (idstripe + 1) * SIZE_STRIPE
-    hrange = range(startstripe, endstripe)
-    wrange = range(camera.width)
+    hrange = [180] #range(startstripe, endstripe)
+    wrange = [90] #range(camera.width)
     shuffle(hrange)
     shuffle(wrange)
     for i, y in enumerate(hrange):
@@ -547,7 +547,7 @@ def processstripe((scenedata, idfile, idstripe)):
 if __name__ == '__main__':
 
     filetotest_path = '/Users/giulio/Desktop/edX-OpenGL/hw3-submissionscenes/*.test'
-    filetotest = glob.glob(filetotest_path)
+    filetotest = glob.glob(filetotest_path) # ['/Users/giulio/Desktop/edX-OpenGL/hw3-submissionscenes/scene4-specular.test']
     filetotestid = zip(filetotest, range(len(filetotest)))
 
     NUM_STRIPES = 4
