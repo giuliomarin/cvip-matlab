@@ -3,7 +3,8 @@ import matplotlib.pyplot as plt
 import os
 from random import shuffle
 import time
-import sys
+import glob
+from multiprocessing import Pool
 
 
 def translate(x, y, z):
@@ -421,7 +422,7 @@ def normalize(x):
 # colorplane = lambda M: (color_plane0 if (int(M[0] * 2) % 2) == (int(M[2] * 2) % 2) else color_plane1)
 
 
-def trace_ray(ray):
+def trace_ray(ray, scene, light):
     # Find first point of intersection with the scene.
     t = np.inf
     for i, obj in enumerate(scene):
@@ -456,11 +457,11 @@ def trace_ray(ray):
     return obj, P, N, c_ray
 
 
-def printbar(curr, total, size = 20, freq = 10):
+def printbar(curr, total, size = 20, freq = 10, pre = ''):
     if curr % freq is not 0:
         return
     num_done = int(float(curr) / float(total) * size)
-    bar = '['
+    bar = pre + '['
     for e in xrange(num_done):
         bar += '='
     for e in xrange(size - num_done):
@@ -469,19 +470,34 @@ def printbar(curr, total, size = 20, freq = 10):
     print bar + ' %d %%' % (float(curr) / float(total) * 100)
 
 
-if __name__ == '__main__':
+def processfile(filename, idfile = 0):
 
-    if len(sys.argv) < 2:
-        filename = '/Users/giulio/Desktop/edX-OpenGL/hw3-submissionscenes/scene4-emission.test'
-    else:
-        filename = sys.argv[1]
+    if isinstance(filename, tuple):
+        idfile = filename[1]
+        filename = filename[0]
+    print '[' + str(idfile) + '] ' + 'Processing input: %s' % filename
 
     foldername = os.path.dirname(filename)
+    scenedata = parsefile(filename)
+    camera, scene, light, param = scenedata
 
-    camera, scene, light, param = parsefile(filename)
+    start_time = time.time()
+    p = Pool(NUM_STRIPES)
+    results = p.map(processstripe, zip([scenedata]*NUM_STRIPES, [idfile]*NUM_STRIPES, range(NUM_STRIPES)))
+    img = sum(results)
+    # img = processstripe(3)
+    printbar(1, 1, pre = '[' + str(idfile) + '] ')
+    print("--- %s seconds ---" % (time.time() - start_time))
 
-    depth_max = 2  # Maximum number of light reflections.
-    col = np.zeros(3)  # Current color.
+    plt.imsave(os.path.join(foldername, param.outfilename), img)
+    # plt.imshow(img)
+    # plt.show()
+
+
+# Parallelize calls
+def processstripe((scenedata, idfile, idstripe)):
+
+    camera, scene, light, param = scenedata
     img = np.zeros((camera.height, camera.width, 3))
 
     # Precompute camera coordinate system
@@ -495,13 +511,21 @@ if __name__ == '__main__':
     max_x = 1.0 * r
 
     # Loop through all pixels.
-    hrange = range(camera.height)
+    col = np.zeros(3)  # Current color.
+
+    START_STRIPES = 0
+    END_STRIPES = camera.height
+    if (END_STRIPES - START_STRIPES) % NUM_STRIPES is not 0:
+        raise Exception('Impossible to divide input in %d stripes' % NUM_STRIPES)
+    SIZE_STRIPE = (END_STRIPES - START_STRIPES) / NUM_STRIPES
+    startstripe = START_STRIPES + idstripe * SIZE_STRIPE
+    endstripe = START_STRIPES + (idstripe + 1) * SIZE_STRIPE
+    hrange = range(startstripe, endstripe)
     wrange = range(camera.width)
     shuffle(hrange)
     shuffle(wrange)
-    start_time = time.time()
     for i, y in enumerate(hrange):
-        printbar(i, camera.height)
+        printbar(i, endstripe - startstripe, pre = '[' + str(idfile) + '|' + str(idstripe) + '] ')
         for x in wrange:
             # Ray direction
             a = max_x * ((x + 0.5) - camera.width / 2) / (camera.width / 2)
@@ -515,8 +539,8 @@ if __name__ == '__main__':
 
             # Loop through initial and secondary rays.
             depth = 0
-            while depth < depth_max:
-                traced = trace_ray(ray)
+            while depth < param.maxdepth:
+                traced = trace_ray(ray, scene, light)
                 if not traced:
                     break
                 obj, P, N, col_ray = traced
@@ -526,9 +550,19 @@ if __name__ == '__main__':
                 col += reflection * col_ray
                 reflection *= obj.reflection
             img[y, x, :] = np.clip(col, 0, 1)
-    printbar(1, 1)
-    print("--- %s seconds ---" % (time.time() - start_time))
+    return img
 
-    plt.imsave(os.path.join(foldername, param.outfilename), img)
-    # plt.imshow(img)
-    # plt.show()
+if __name__ == '__main__':
+
+    filetotest_path = '/Users/giulio/Desktop/edX-OpenGL/hw3-submissionscenes/*.test'
+    filetotest = glob.glob(filetotest_path)
+    filetotestid = zip(filetotest, range(len(filetotest)))
+
+    NUM_PROCESSES = 1
+    NUM_STRIPES = 12
+
+    p = Pool(NUM_PROCESSES)
+    p.map(processfile, filetotestid)
+    # processfile(filetotestid[0])
+
+
