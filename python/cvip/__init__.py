@@ -1,4 +1,4 @@
 # __all__ = ["io"]
 
-from cvip import io
+from cvip import dataio
 from cvip.transformations import *

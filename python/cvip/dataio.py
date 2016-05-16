@@ -2,6 +2,23 @@ import cv2
 import numpy as np
 
 
+def imread(imgPath):
+    """
+    Load a char/float mat stored in a png file
+        \param imgPath : path to the .png image
+        \return : is float
+        \return : matrix values
+    """
+    ## Read the png image
+    img = cv2.imread(imgPath, -1)
+    if img is None:
+        raise IOError('File not found: %s' % imgPath)
+    if img.shape[2] == 4:
+        return imread32f(imgPath), 1
+    else:
+        return img, 0
+
+
 def imread32f(imgPath):
     """
     Load a float mat stored in a png file
