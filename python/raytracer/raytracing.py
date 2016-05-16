@@ -95,7 +95,7 @@ def parsefile(filepath):
             diffuse = np.asarray([float(line[1]), float(line[2]), float(line[3])])
         elif cmd == 'specular':
             specular = np.asarray([float(line[1]), float(line[2]), float(line[3])])
-        elif cmd == 'scininess':
+        elif cmd == 'shininess':
             shininess = float(line[1])
         elif cmd == 'emission':
             emission = np.asarray([float(line[1]), float(line[2]), float(line[3])])
