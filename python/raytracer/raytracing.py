@@ -449,8 +449,8 @@ def trace_ray(ray, scene, light):
     return obj, P, N, c_ray
 
 
-def printbar(curr, total, size = 20, freq = 5, pre = ''):
-    if (curr * 100.0 / float(total)) % freq is not 0:
+def printbar(curr, total, size = 20, freq = 10, pre = ''):
+    if curr % freq is not 0:
         return
     num_done = int(float(curr) / float(total) * size)
     bar = pre + '['
@@ -512,8 +512,8 @@ def processstripe((scenedata, idfile, idstripe)):
     SIZE_STRIPE = (END_STRIPES - START_STRIPES) / NUM_STRIPES
     startstripe = START_STRIPES + idstripe * SIZE_STRIPE
     endstripe = START_STRIPES + (idstripe + 1) * SIZE_STRIPE
-    hrange = [180] #range(startstripe, endstripe)
-    wrange = [90] #range(camera.width)
+    hrange = range(startstripe, endstripe)
+    wrange = range(camera.width)
     shuffle(hrange)
     shuffle(wrange)
     for i, y in enumerate(hrange):
