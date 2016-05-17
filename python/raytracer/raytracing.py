@@ -86,7 +86,7 @@ class Object:
 
 
 class Triangle(Object):
-    def __init__(self, vertex, ambient, diffuse = np.array([0.0, 0.0, 0.0]),
+    def __init__(self, vertex, ambient = np.array([0.0, 0.0, 0.0]), diffuse = np.array([0.0, 0.0, 0.0]),
                  specular = np.array([0.0, 0.0, 0.0]), shininess = 50.0, emission = np.array([0.0, 0.0, 0.0])):
 
         # Shape
@@ -137,7 +137,7 @@ class Triangle(Object):
 
 
 class Plane(Object):
-    def __init__(self, position, normal, ambient, diffuse = np.array([0.0, 0.0, 0.0]),
+    def __init__(self, position, normal, ambient = np.array([0.0, 0.0, 0.0]), diffuse = np.array([0.0, 0.0, 0.0]),
                  specular = np.array([0.0, 0.0, 0.0]), shininess = 50.0, emission = np.array([0.0, 0.0, 0.0])):
         # Shape
         self.position = np.asarray(position)
@@ -165,7 +165,7 @@ class Plane(Object):
 
 
 class Checkerboard(Object):
-    def __init__(self, position, normal, ambient, diffuse = np.array([0.0, 0.0, 0.0]),
+    def __init__(self, position, normal, ambient = np.array([0.0, 0.0, 0.0]), diffuse = np.array([0.0, 0.0, 0.0]),
                  specular = np.array([0.0, 0.0, 0.0]), shininess = 50.0, emission = np.array([0.0, 0.0, 0.0])):
         # Shape
         self.position = np.asarray(position)
@@ -193,7 +193,7 @@ class Checkerboard(Object):
 
 
 class Sphere(Object):
-    def __init__(self, center, radius, ambient, diffuse = np.array([0.0, 0.0, 0.0]),
+    def __init__(self, center, radius, ambient = np.array([0.0, 0.0, 0.0]), diffuse = np.array([0.0, 0.0, 0.0]),
                  specular = np.array([0.0, 0.0, 0.0]), shininess = 50.0, emission = np.array([0.0, 0.0, 0.0])):
 
         # Shape
