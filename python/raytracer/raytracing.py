@@ -543,6 +543,8 @@ def processstripe((scenedata, idfile, idstripe)):
                 depth += 1
                 col += reflection * col_ray
                 reflection *= obj.specular
+                if np.any(reflection):
+                    break
             img[y, x, :] = np.clip(col, 0, 1)
     return img
 
