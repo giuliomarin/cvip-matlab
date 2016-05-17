@@ -179,7 +179,7 @@ class Camera:
 class Parameters:
     def __init__(self):
         self.outfilename = 'raytracing.png'
-        self.maxdepth = 1
+        self.maxdepth = 5
 
 
 class Light:
