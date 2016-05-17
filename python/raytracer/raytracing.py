@@ -440,7 +440,7 @@ def trace_ray(ray, scene, light):
     for l in light:
         l_ray = (P + N * .0001, -l.getdirection(P))
         r = l.getdistance(P)
-        d = [obj_sh.intersect(l_ray) for k, obj_sh in enumerate(scene) if k != obj_idx]
+        d = [obj_sh.intersect(l_ray) for k, obj_sh in enumerate(scene)]
         if d and min(d) < r:
             continue
 
