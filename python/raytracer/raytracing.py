@@ -6,155 +6,10 @@ import time
 import glob
 from multiprocessing import Pool
 
-def cross(a, b):
-    return np.asarray([a[1]*b[2] - a[2]*b[1], a[2]*b[0] - a[0]*b[2], a[0]*b[1] - a[1]*b[0]])
 
-
-def translate(x, y, z):
-    M = np.eye(4, dtype = np.float32)
-    M[0, 3] = x
-    M[1, 3] = y
-    M[2, 3] = z
-    return M
-
-
-def rotate(x, y, z, a):
-    a = a / 180.0 * np.pi
-    R1 = np.cos(a) * np.asmatrix(np.eye(3, dtype = np.float32))
-    R2 = (1 - np.cos(a)) * np.asmatrix([[x * x, x * y, x * z], [x * y, y * y, y * z], [x * z, y * z, z * z]])
-    R3 = np.sin(a) * np.asmatrix([[0, -z, y], [z, 0, -x], [-y, x, 0]])
-    M = np.asmatrix(np.eye(4, dtype = np.float32))
-    M[0:3, 0:3] = R1 + R2 + R3
-    return M
-
-
-def scale(x, y, z):
-    M = np.asmatrix(np.eye(4, dtype = np.float32))
-    M[0, 0] = x
-    M[1, 1] = y
-    M[2, 2] = z
-    return M
-
-
-def parsefile(filepath):
-    camera = Camera()  # Camera(640 / 4, 480 / 4, np.array([0.5, 0.36, -2.]), np.array([0., 0., 0.]), np.array([0., 1., 0.]), 60.0)
-
-    scene = []  # [Sphere([.75, .1, 1.], 0.6, [0., 0., 1.0]), Plane([0., 0.0, 5.], [0., 0., -1.], [0.0, 0.1, 0.0], [0.0, 1.0, 0.0])]
-
-    light = []  # [Point([5.0, 10.0, -10.0], [1.0, 1.0, 1.0], 1.0, [1.0, 0.0, 0.0])]
-
-    param = Parameters()
-
-    vertex = []
-    vertexnormal = []
-
-    transfstack = [np.asmatrix(np.eye(4, dtype = np.float32))]
-
-    # Default global parameters
-    attenuation = np.asarray([1.0, 0.0, 0.0])
-
-    # Default parameters per object
-    ambient = np.asarray([0.2, 0.2, 0.2])
-    diffuse = np.asarray([0.0, 0.0, 0.0])
-    specular = np.asarray([0.0, 0.0, 0.0])
-    emission = np.asarray([0.0, 0.0, 0.0])
-    shininess = 0.0
-
-    fid = open(filepath, 'r')
-    for line in fid:
-        line = line.lstrip()
-        # skip empty lines and comments
-        if len(line) == 0 or line.startswith('#'):
-            continue
-        line = line.split()
-        cmd = line[0]
-
-        # Camera parameters
-        if cmd == 'size':
-            camera.setsize(int(line[1]), int(line[2]))
-        elif cmd == 'camera':
-            camera.setpose(
-                np.asarray([float(line[1]), float(line[2]), float(line[3])]),  # eye
-                np.asarray([float(line[4]), float(line[5]), float(line[6])]),  # center
-                np.asarray([float(line[7]), float(line[8]), float(line[9])]),  # up
-                float(line[10]))  # fov
-
-        # Lights and objects
-        elif cmd == 'attenuation':
-            attenuation = np.asarray([float(line[1]), float(line[2]), float(line[3])])
-        elif cmd == 'directional':
-            obj = Directional(np.asarray([float(line[1]), float(line[2]), float(line[3])]),  # direction
-                              np.asarray([float(line[4]), float(line[5]), float(line[6])]))  # color
-            obj.applytransform(transfstack[-1])
-            light.append(obj)
-        elif cmd == 'point':
-            obj = Point(np.asarray([float(line[1]), float(line[2]), float(line[3])]),  # position
-                        np.asarray([float(line[4]), float(line[5]), float(line[6])]),  # color
-                        attenuation)  # attenuation
-            obj.applytransform(transfstack[-1])
-            light.append(obj)
-        elif cmd == 'ambient':
-            ambient = np.asarray([float(line[1]), float(line[2]), float(line[3])])
-        elif cmd == 'diffuse':
-            diffuse = np.asarray([float(line[1]), float(line[2]), float(line[3])])
-        elif cmd == 'specular':
-            specular = np.asarray([float(line[1]), float(line[2]), float(line[3])])
-        elif cmd == 'shininess':
-            shininess = float(line[1])
-        elif cmd == 'emission':
-            emission = np.asarray([float(line[1]), float(line[2]), float(line[3])])
-
-        elif cmd == 'maxverts':
-            vertex = []
-        elif cmd == 'maxvertnormals':
-            vertexnormal = []
-        elif cmd == 'vertex':
-            vertex.append(np.asarray([float(line[1]), float(line[2]), float(line[3])]))
-        elif cmd == 'vertexnormal':
-            vertex.append(np.asarray(
-                [float(line[1]), float(line[2]), float(line[3]), float(line[4]), float(line[5]), float(line[6])]))
-
-        elif cmd == 'tri':
-            obj = Triangle([vertex[i] for i in (int(line[1]), int(line[2]), int(line[3]))],
-                           ambient,
-                           diffuse,
-                           specular,
-                           shininess,
-                           emission)
-            obj.applytransform(transfstack[-1])
-            scene.append(obj)
-        elif cmd == 'sphere':
-            obj = Sphere(np.asarray([float(line[1]), float(line[2]), float(line[3])]),  # center
-                         float(line[4]),  # radius
-                         ambient,
-                         diffuse,
-                         specular,
-                         shininess,
-                         emission)
-            obj.applytransform(transfstack[-1])
-            scene.append(obj)
-        # Transformations
-        elif cmd == 'translate':
-            transfstack[-1] *= translate(float(line[1]), float(line[2]), float(line[3]))
-        elif cmd == 'scale':
-            transfstack[-1] *= scale(float(line[1]), float(line[2]), float(line[3]))
-        elif cmd == 'rotate':
-            transfstack[-1] *= rotate(float(line[1]), float(line[2]), float(line[3]), float(line[4]))
-
-        elif cmd == 'pushTransform':
-            transfstack.append(transfstack[-1].copy())
-        elif cmd == 'popTransform':
-            transfstack.pop()
-
-        # Other parameters
-        elif cmd == 'maxdepth':
-            param.maxdepth = int(line[1])
-        elif cmd == 'output':
-            param.outfilename = line[1]
-
-    fid.close()
-
-    return camera, scene, light, param
+#################
+# Classes
+#################
 
 
 class Camera:
@@ -404,6 +259,165 @@ class Sphere(Object):
         self.Minv = np.linalg.inv(M)
 
 
+#################
+# Functions
+#################
+
+def parsefile(filepath):
+    camera = Camera()  # Camera(640 / 4, 480 / 4, np.array([0.5, 0.36, -2.]), np.array([0., 0., 0.]), np.array([0., 1., 0.]), 60.0)
+
+    scene = []  # [Sphere([.75, .1, 1.], 0.6, [0., 0., 1.0]), Plane([0., 0.0, 5.], [0., 0., -1.], [0.0, 0.1, 0.0], [0.0, 1.0, 0.0])]
+    # spheres = []
+    # triangles = []
+    light = []  # [Point([5.0, 10.0, -10.0], [1.0, 1.0, 1.0], 1.0, [1.0, 0.0, 0.0])]
+
+    param = Parameters()
+
+    vertex = []
+    vertexnormal = []
+
+    transfstack = [np.asmatrix(np.eye(4, dtype = np.float32))]
+
+    # Default global parameters
+    attenuation = np.asarray([1.0, 0.0, 0.0])
+
+    # Default parameters per object
+    ambient = np.asarray([0.2, 0.2, 0.2])
+    diffuse = np.asarray([0.0, 0.0, 0.0])
+    specular = np.asarray([0.0, 0.0, 0.0])
+    emission = np.asarray([0.0, 0.0, 0.0])
+    shininess = 0.0
+
+    fid = open(filepath, 'r')
+    for line in fid:
+        line = line.lstrip()
+        # skip empty lines and comments
+        if len(line) == 0 or line.startswith('#'):
+            continue
+        line = line.split()
+        cmd = line[0]
+
+        # Camera parameters
+        if cmd == 'size':
+            camera.setsize(int(line[1]), int(line[2]))
+        elif cmd == 'camera':
+            camera.setpose(
+                np.asarray([float(line[1]), float(line[2]), float(line[3])]),  # eye
+                np.asarray([float(line[4]), float(line[5]), float(line[6])]),  # center
+                np.asarray([float(line[7]), float(line[8]), float(line[9])]),  # up
+                float(line[10]))  # fov
+
+        # Lights and objects
+        elif cmd == 'attenuation':
+            attenuation = np.asarray([float(line[1]), float(line[2]), float(line[3])])
+        elif cmd == 'directional':
+            obj = Directional(np.asarray([float(line[1]), float(line[2]), float(line[3])]),  # direction
+                              np.asarray([float(line[4]), float(line[5]), float(line[6])]))  # color
+            obj.applytransform(transfstack[-1])
+            light.append(obj)
+        elif cmd == 'point':
+            obj = Point(np.asarray([float(line[1]), float(line[2]), float(line[3])]),  # position
+                        np.asarray([float(line[4]), float(line[5]), float(line[6])]),  # color
+                        attenuation)  # attenuation
+            obj.applytransform(transfstack[-1])
+            light.append(obj)
+        elif cmd == 'ambient':
+            ambient = np.asarray([float(line[1]), float(line[2]), float(line[3])])
+        elif cmd == 'diffuse':
+            diffuse = np.asarray([float(line[1]), float(line[2]), float(line[3])])
+        elif cmd == 'specular':
+            specular = np.asarray([float(line[1]), float(line[2]), float(line[3])])
+        elif cmd == 'shininess':
+            shininess = float(line[1])
+        elif cmd == 'emission':
+            emission = np.asarray([float(line[1]), float(line[2]), float(line[3])])
+
+        elif cmd == 'maxverts':
+            vertex = []
+        elif cmd == 'maxvertnormals':
+            vertexnormal = []
+        elif cmd == 'vertex':
+            vertex.append(np.asarray([float(line[1]), float(line[2]), float(line[3])]))
+        elif cmd == 'vertexnormal':
+            vertex.append(np.asarray(
+                [float(line[1]), float(line[2]), float(line[3]), float(line[4]), float(line[5]), float(line[6])]))
+
+        elif cmd == 'tri':
+            obj = Triangle([vertex[i] for i in (int(line[1]), int(line[2]), int(line[3]))],
+                           ambient,
+                           diffuse,
+                           specular,
+                           shininess,
+                           emission)
+            obj.applytransform(transfstack[-1])
+            scene.append(obj)
+        elif cmd == 'sphere':
+            obj = Sphere(np.asarray([float(line[1]), float(line[2]), float(line[3])]),  # center
+                         float(line[4]),  # radius
+                         ambient,
+                         diffuse,
+                         specular,
+                         shininess,
+                         emission)
+            obj.applytransform(transfstack[-1])
+            scene.append(obj)
+        # Transformations
+        elif cmd == 'translate':
+            transfstack[-1] *= translate(float(line[1]), float(line[2]), float(line[3]))
+        elif cmd == 'scale':
+            transfstack[-1] *= scale(float(line[1]), float(line[2]), float(line[3]))
+        elif cmd == 'rotate':
+            transfstack[-1] *= rotate(float(line[1]), float(line[2]), float(line[3]), float(line[4]))
+
+        elif cmd == 'pushTransform':
+            transfstack.append(transfstack[-1].copy())
+        elif cmd == 'popTransform':
+            transfstack.pop()
+
+        # Other parameters
+        elif cmd == 'maxdepth':
+            param.maxdepth = int(line[1])
+        elif cmd == 'output':
+            param.outfilename = line[1]
+
+    # scene.append(triangles)
+    # scene.append(spheres)
+    fid.close()
+
+    return camera, scene, light, param
+
+
+
+def cross(a, b):
+    return np.asarray([a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]])
+
+
+def translate(x, y, z):
+    M = np.eye(4, dtype = np.float32)
+    M[0, 3] = x
+    M[1, 3] = y
+    M[2, 3] = z
+    return M
+
+
+def rotate(x, y, z, a):
+    a = a / 180.0 * np.pi
+    R1 = np.cos(a) * np.asmatrix(np.eye(3, dtype = np.float32))
+    R2 = (1 - np.cos(a)) * np.asmatrix([[x * x, x * y, x * z], [x * y, y * y, y * z], [x * z, y * z, z * z]])
+    R3 = np.sin(a) * np.asmatrix([[0, -z, y], [z, 0, -x], [-y, x, 0]])
+    M = np.asmatrix(np.eye(4, dtype = np.float32))
+    M[0:3, 0:3] = R1 + R2 + R3
+    return M
+
+
+def scale(x, y, z):
+    M = np.asmatrix(np.eye(4, dtype = np.float32))
+    M[0, 0] = x
+    M[1, 1] = y
+    M[2, 2] = z
+    return M
+
+
 def normalize(x):
     x /= np.linalg.norm(x)
     return x
@@ -467,7 +481,6 @@ def printbar(curr, total, size = 20, freq = 10, pre = ''):
 
 
 def processfile(filename, idfile = 0):
-
     if isinstance(filename, tuple):
         idfile = filename[1]
         filename = filename[0]
@@ -482,7 +495,7 @@ def processfile(filename, idfile = 0):
     results = p.map(processstripe, zip([scenedata]*NUM_STRIPES, [idfile]*NUM_STRIPES, range(NUM_STRIPES)))
     img = sum(results)
     # img = processstripe(3)
-    printbar(1, 1, pre = '[' + str(idfile) + '] ')
+    printbar(1, 1, 0, pre = '[' + str(idfile) + '] ')
     print("--- %s seconds ---" % (time.time() - start_time))
 
     plt.imsave(os.path.join(foldername, param.outfilename), img)
@@ -492,7 +505,6 @@ def processfile(filename, idfile = 0):
 
 # Parallelize calls
 def processstripe((scenedata, idfile, idstripe)):
-
     camera, scene, light, param = scenedata
     img = np.zeros((camera.height, camera.width, 3))
 
@@ -550,6 +562,12 @@ def processstripe((scenedata, idfile, idstripe)):
             img[y, x, :] = np.clip(col, 0, 1)
     return img
 
+
+#################
+# Main
+#################
+
+
 if __name__ == '__main__':
 
     filetotest_path = '/Users/giulio/Desktop/edX-OpenGL/hw3-submissionscenes/*.test'
@@ -560,5 +578,3 @@ if __name__ == '__main__':
 
     for datatoprocess in filetotestid:
         processfile(datatoprocess)
-
-
