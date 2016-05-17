@@ -454,8 +454,12 @@ def trace_ray(ray, scene, light):
     for l in light:
         l_ray = (P + N * .0001, -l.getdirection(P))
         r = l.getdistance(P)
-        d = [obj_sh.intersect(l_ray) for k, obj_sh in enumerate(scene)]
-        if d and min(d) < r:
+        occluded = False
+        for obj_sh in scene:
+            if obj_sh.intersect(l_ray) < r:
+                occluded = True
+                break
+        if occluded:
             continue
 
         # Computing the color.
