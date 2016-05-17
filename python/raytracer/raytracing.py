@@ -259,6 +259,34 @@ class Sphere(Object):
         self.Minv = np.linalg.inv(M)
 
 
+class Scene:
+    triangles = []
+    spheres = []
+
+
+    def isoccluded(self, ray, r):
+        for obj_class in [self.triangles, self.spheres]:
+            for obj_sh in obj_class:
+                if obj_sh.intersect(ray) < r:
+                    return True
+        return False
+
+    def getintersection(self, ray):
+        t = np.inf
+        for obj_class in [self.triangles, self.spheres]:
+            obj_idx = -1
+            for i, obj_sh in enumerate(obj_class):
+                t_obj = obj_sh.intersect(ray)
+                if t_obj < t:
+                    t, obj_idx = t_obj, i
+            if obj_idx >= 0:
+                obj = obj_class[obj_idx]
+        if t == np.inf:
+            return
+        else:
+            return obj, t
+
+
 #################
 # Functions
 #################
@@ -266,9 +294,8 @@ class Sphere(Object):
 def parsefile(filepath):
     camera = Camera()  # Camera(640 / 4, 480 / 4, np.array([0.5, 0.36, -2.]), np.array([0., 0., 0.]), np.array([0., 1., 0.]), 60.0)
 
-    scene = []  # [Sphere([.75, .1, 1.], 0.6, [0., 0., 1.0]), Plane([0., 0.0, 5.], [0., 0., -1.], [0.0, 0.1, 0.0], [0.0, 1.0, 0.0])]
-    # spheres = []
-    # triangles = []
+    scene = Scene()  # [Sphere([.75, .1, 1.], 0.6, [0., 0., 1.0]), Plane([0., 0.0, 5.], [0., 0., -1.], [0.0, 0.1, 0.0], [0.0, 1.0, 0.0])]
+
     light = []  # [Point([5.0, 10.0, -10.0], [1.0, 1.0, 1.0], 1.0, [1.0, 0.0, 0.0])]
 
     param = Parameters()
@@ -350,7 +377,7 @@ def parsefile(filepath):
                            shininess,
                            emission)
             obj.applytransform(transfstack[-1])
-            scene.append(obj)
+            scene.triangles.append(obj)
         elif cmd == 'sphere':
             obj = Sphere(np.asarray([float(line[1]), float(line[2]), float(line[3])]),  # center
                          float(line[4]),  # radius
@@ -360,7 +387,7 @@ def parsefile(filepath):
                          shininess,
                          emission)
             obj.applytransform(transfstack[-1])
-            scene.append(obj)
+            scene.spheres.append(obj)
         # Transformations
         elif cmd == 'translate':
             transfstack[-1] *= translate(float(line[1]), float(line[2]), float(line[3]))
@@ -380,8 +407,6 @@ def parsefile(filepath):
         elif cmd == 'output':
             param.outfilename = line[1]
 
-    # scene.append(triangles)
-    # scene.append(spheres)
     fid.close()
 
     return camera, scene, light, param
@@ -434,16 +459,11 @@ def normalize(x):
 
 def trace_ray(ray, scene, light):
     # Find first point of intersection with the scene.
-    t = np.inf
-    for i, obj in enumerate(scene):
-        t_obj = obj.intersect(ray)
-        if t_obj < t:
-            t, obj_idx = t_obj, i
-    # Return None if the ray does not intersect any object.
-    if t == np.inf:
+    obj_intersection = scene.getintersection(ray)
+    if not obj_intersection:
         return
-    # Find the object.
-    obj = scene[obj_idx]
+    obj, t = obj_intersection
+
     # Find the point of intersection on the object.
     P = ray[0] + ray[1] * t
     # Find properties of the object.
@@ -454,12 +474,7 @@ def trace_ray(ray, scene, light):
     for l in light:
         l_ray = (P + N * .0001, -l.getdirection(P))
         r = l.getdistance(P)
-        occluded = False
-        for obj_sh in scene:
-            if obj_sh.intersect(l_ray) < r:
-                occluded = True
-                break
-        if occluded:
+        if scene.isoccluded(l_ray, r):
             continue
 
         # Computing the color.
