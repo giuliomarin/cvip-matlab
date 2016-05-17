@@ -6,6 +6,9 @@ import time
 import glob
 from multiprocessing import Pool
 
+def cross(a, b):
+    return np.asarray([a[1]*b[2] - a[2]*b[1], a[2]*b[0] - a[0]*b[2], a[0]*b[1] - a[1]*b[0]])
+
 
 def translate(x, y, z):
     M = np.eye(4, dtype = np.float32)
@@ -236,7 +239,7 @@ class Triangle(Object):
         self.a = np.asarray(vertex[0])
         self.b = np.asarray(vertex[1])
         self.c = np.asarray(vertex[2])
-        self.normal = normalize(np.cross(self.b - self.a, self.c - self.a))
+        self.normal = normalize(cross(self.b - self.a, self.c - self.a))
 
         # Color
         self.ambient = np.asarray(ambient)
@@ -251,7 +254,7 @@ class Triangle(Object):
     def intersect(self, ray):
         e1 = self.b - self.a
         e2 = self.c - self.a
-        P = np.cross(ray[1], e2)
+        P = cross(ray[1], e2)
         det = np.dot(e1, P)
         if abs(det) < 1e-6:
             return np.inf
@@ -260,7 +263,7 @@ class Triangle(Object):
         u = np.dot(T, P) * inv_det
         if u < 0 or u > 1:
             return np.inf
-        Q = np.cross(T, e1)
+        Q = cross(T, e1)
         v = np.dot(ray[1], Q) * inv_det
         if v < 0 or u + v > 1:
             return np.inf
@@ -276,7 +279,7 @@ class Triangle(Object):
         self.b = np.asarray(np.dot(M, b).T)[0][0:3]
         c = np.asmatrix(np.append(self.c, 1)).T
         self.c = np.asarray(np.dot(M, c).T)[0][0:3]
-        self.normal = normalize(np.cross(self.b - self.a, self.c - self.a))
+        self.normal = normalize(cross(self.b - self.a, self.c - self.a))
 
 
 class Plane(Object):
@@ -496,8 +499,8 @@ def processstripe((scenedata, idfile, idstripe)):
 
     # Precompute camera coordinate system
     c_w = normalize(camera.eye - camera.center)
-    c_u = normalize(np.cross(camera.up, c_w))
-    c_v = np.cross(c_w, c_u)
+    c_u = normalize(cross(camera.up, c_w))
+    c_v = cross(c_w, c_u)
 
     f = 1.0 / np.tan(camera.fovyr / 2.0)
     max_y = 1.0
@@ -519,7 +522,7 @@ def processstripe((scenedata, idfile, idstripe)):
     shuffle(hrange)
     shuffle(wrange)
     for i, y in enumerate(hrange):
-        printbar(i, endstripe - startstripe, pre = '[' + str(idfile) + '|' + str(idstripe) + '] ')
+        printbar(i, len(hrange), pre = '[' + str(idfile) + '|' + str(idstripe) + '] ')
         for x in wrange:
             # Ray direction
             a = max_x * ((x + 0.5) - camera.width / 2) / (camera.width / 2)
