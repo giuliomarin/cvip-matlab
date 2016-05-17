@@ -84,8 +84,7 @@ def parsefile(filepath):
             attenuation = np.asarray([float(line[1]), float(line[2]), float(line[3])])
         elif cmd == 'directional':
             obj = Directional(np.asarray([float(line[1]), float(line[2]), float(line[3])]),  # direction
-                              np.asarray([float(line[4]), float(line[5]), float(line[6])]),  # color
-                              attenuation)  # attenuation
+                              np.asarray([float(line[4]), float(line[5]), float(line[6])]))  # color
             obj.applytransform(transfstack[-1])
             light.append(obj)
         elif cmd == 'point':
