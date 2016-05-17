@@ -19,7 +19,7 @@ def rotate(x, y, z, a):
     a = a / 180.0 * np.pi
     R1 = np.cos(a) * np.asmatrix(np.eye(3, dtype = np.float32))
     R2 = (1 - np.cos(a)) * np.asmatrix([[x * x, x * y, x * z], [x * y, y * y, y * z], [x * z, y * z, z * z]])
-    R3 = np.sin(a) * np.asmatrix([[0, -z, y], [z, 0, -x], [y, x, 0]])
+    R3 = np.sin(a) * np.asmatrix([[0, -z, y], [z, 0, -x], [-y, x, 0]])
     M = np.asmatrix(np.eye(4, dtype = np.float32))
     M[0:3, 0:3] = R1 + R2 + R3
     return M
@@ -193,7 +193,7 @@ class Directional(Light):
         self.attenuation = attenuation
 
     def getdirection(self, p):
-        return self.direction
+        return -self.direction
 
     def getdistance(self, p):
         return np.inf
