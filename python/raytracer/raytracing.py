@@ -261,8 +261,15 @@ class Sphere(Object):
 
 class Scene:
     triangles = []
+    group_triangles = []
     spheres = []
 
+    def computegroups(self):
+        a = np.asarray([t.a for t in self.triangles])
+        b = np.asarray([t.b for t in self.triangles])
+        c = np.asarray([t.c for t in self.triangles])
+        self.group_triangles = Triangle((a, b, c))
+        self.group_triangles.intersect((np.asarray([-4,-8,10]), np.asarray([0,0,-1])))
 
     def isoccluded(self, ray, r):
         for obj_class in [self.triangles, self.spheres]:
@@ -273,14 +280,26 @@ class Scene:
 
     def getintersection(self, ray):
         t = np.inf
-        for obj_class in [self.triangles, self.spheres]:
-            obj_idx = -1
-            for i, obj_sh in enumerate(obj_class):
-                t_obj = obj_sh.intersect(ray)
-                if t_obj < t:
-                    t, obj_idx = t_obj, i
-            if obj_idx >= 0:
-                obj = obj_class[obj_idx]
+
+        # Spheres
+        obj_idx = -1
+        for i, obj_sh in enumerate(self.spheres):
+            t_obj = obj_sh.intersect(ray)
+            if t_obj < t:
+                t, obj_idx = t_obj, i
+        if obj_idx >= 0:
+            obj = self.spheres[obj_idx]
+
+        # Triangles
+        obj_idx = -1
+        for i, obj_sh in enumerate(self.triangles):
+            t_obj = obj_sh.intersect(ray)
+            if t_obj < t:
+                t, obj_idx = t_obj, i
+        if obj_idx >= 0:
+            obj = self.triangles[obj_idx]
+
+        # Check intersection
         if t == np.inf:
             return
         else:
@@ -407,6 +426,7 @@ def parsefile(filepath):
         elif cmd == 'output':
             param.outfilename = line[1]
 
+    scene.computegroups()
     fid.close()
 
     return camera, scene, light, param
@@ -512,10 +532,10 @@ def processfile(filename, idfile = 0):
     camera, scene, light, param = scenedata
 
     start_time = time.time()
-    p = Pool(NUM_STRIPES)
-    results = p.map(processstripe, zip([scenedata]*NUM_STRIPES, [idfile]*NUM_STRIPES, range(NUM_STRIPES)))
-    img = sum(results)
-    # img = processstripe(3)
+    # p = Pool(NUM_STRIPES)
+    # results = p.map(processstripe, zip([scenedata]*NUM_STRIPES, [idfile]*NUM_STRIPES, range(NUM_STRIPES)))
+    # img = sum(results)
+    img = processstripe((scenedata, 0, 0))
     printbar(1, 1, 0, pre = '[' + str(idfile) + '] ')
     print("--- %s seconds ---" % (time.time() - start_time))
 
@@ -592,10 +612,11 @@ def processstripe((scenedata, idfile, idstripe)):
 if __name__ == '__main__':
 
     filetotest_path = '/Users/giulio/Desktop/edX-OpenGL/hw3-submissionscenes/*.test'
-    filetotest = glob.glob(filetotest_path) # ['/Users/giulio/Desktop/edX-OpenGL/hw3-submissionscenes/scene4-specular.test']
+    filetotest = [
+        '/Users/giulio/Desktop/edX-OpenGL/hw3-submissionscenes/scene6.test']  # glob.glob(filetotest_path) # ['/Users/giulio/Desktop/edX-OpenGL/hw3-submissionscenes/scene4-specular.test']
     filetotestid = zip(filetotest, range(len(filetotest)))
 
-    NUM_STRIPES = 4
+    NUM_STRIPES = 1
 
     for datatoprocess in filetotestid:
         processfile(datatoprocess)
