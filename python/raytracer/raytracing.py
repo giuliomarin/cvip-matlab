@@ -444,8 +444,10 @@ def scale(x, y, z):
 
 
 def normalize(x):
-    x /= np.linalg.norm(x)
-    return x
+    if len(x.shape) > 1:
+        return x / np.linalg.norm(x, axis = -1).reshape((len(x), 1))
+    else:
+        return x / np.linalg.norm(x)
 
 
 # def get_color(obj, M):
