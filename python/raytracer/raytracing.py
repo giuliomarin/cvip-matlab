@@ -1,4 +1,6 @@
 import numpy as np
+import matplotlib
+matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import os
 from random import shuffle
@@ -83,6 +85,54 @@ class Object:
 
     def getnormal(self, ray):
         pass
+
+
+class TriangleSet(Object):
+    def __init__(self, vertex, ambient = np.array([0.0, 0.0, 0.0]), diffuse = np.array([0.0, 0.0, 0.0]),
+                 specular = np.array([0.0, 0.0, 0.0]), shininess = 50.0, emission = np.array([0.0, 0.0, 0.0])):
+
+        # Shape
+        self.a = np.asarray(vertex[0])
+        self.b = np.asarray(vertex[1])
+        self.c = np.asarray(vertex[2])
+        self.normal = normalize(np.cross(self.b - self.a, self.c - self.a))
+
+        # Color
+        self.ambient = np.asarray(ambient)
+        self.diffuse = np.asarray(diffuse)
+        self.emission = np.asarray(emission)
+        self.specular = np.asarray(specular)
+        self.shininess = shininess
+
+    def getnormal(self, ray):
+        return self.normal
+
+    def intersect(self, ray):
+        e1 = self.b - self.a
+        e2 = self.c - self.a
+        P = np.cross(ray[1], e2)
+        det = np.sum(e1 * P, axis = 1)
+        if all(abs(det) < 1e-6):
+            return
+        T = ray[0] - self.a
+        u = np.sum(T * P, axis = 1)
+        ok = [a and b and c for a, b, c in zip(det > 1e-6, u >= 0, u <= det)]
+        if not any(ok):
+            return
+        Q = np.cross(T[np.where(ok)], e1[np.where(ok)])
+        v = np.asarray([np.inf] * len(ok))
+        v[np.where(ok)] = np.sum(ray[1] * Q, axis = 1)
+        intersect = [a and b and c for a, b, c, in zip(ok, v >= 0, u + v <= det)]
+        t = np.asarray([-1.0] * len(ok))
+        t[np.where(ok)] = np.sum(e2[np.where(ok)] * Q, axis = 1) / det[np.where(ok)]
+        intersectfront = [a and b for a, b in zip(intersect, t > 1e-6)]
+        idxvalid = np.where(intersectfront)[0]
+        if len(idxvalid) == 0:
+            return
+        else:
+            t_obj = np.min(t[idxvalid])
+            idx_obj = idxvalid[np.argmin(t[idxvalid])]
+            return t_obj, idx_obj
 
 
 class Triangle(Object):
@@ -268,8 +318,7 @@ class Scene:
         a = np.asarray([t.a for t in self.triangles])
         b = np.asarray([t.b for t in self.triangles])
         c = np.asarray([t.c for t in self.triangles])
-        self.group_triangles = Triangle((a, b, c))
-        self.group_triangles.intersect((np.asarray([-4,-8,10]), np.asarray([0,0,-1])))
+        self.group_triangles = TriangleSet((a, b, c))
 
     def isoccluded(self, ray, r):
         for obj_class in [self.triangles, self.spheres]:
@@ -291,13 +340,12 @@ class Scene:
             obj = self.spheres[obj_idx]
 
         # Triangles
-        obj_idx = -1
-        for i, obj_sh in enumerate(self.triangles):
-            t_obj = obj_sh.intersect(ray)
-            if t_obj < t:
-                t, obj_idx = t_obj, i
-        if obj_idx >= 0:
-            obj = self.triangles[obj_idx]
+        res = self.group_triangles.intersect(ray)
+        if res:
+            t_sh, obj_idx = res
+            if t_sh < t:
+                t = t_sh
+                obj = self.triangles[obj_idx]
 
         # Check intersection
         if t == np.inf:
@@ -532,10 +580,10 @@ def processfile(filename, idfile = 0):
     camera, scene, light, param = scenedata
 
     start_time = time.time()
-    # p = Pool(NUM_STRIPES)
-    # results = p.map(processstripe, zip([scenedata]*NUM_STRIPES, [idfile]*NUM_STRIPES, range(NUM_STRIPES)))
-    # img = sum(results)
-    img = processstripe((scenedata, 0, 0))
+    p = Pool(NUM_STRIPES)
+    results = p.map(processstripe, zip([scenedata]*NUM_STRIPES, [idfile]*NUM_STRIPES, range(NUM_STRIPES)))
+    img = sum(results)
+    # img = processstripe((scenedata, 0, 0))
     printbar(1, 1, 0, pre = '[' + str(idfile) + '] ')
     print("--- %s seconds ---" % (time.time() - start_time))
 
@@ -616,7 +664,7 @@ if __name__ == '__main__':
         '/Users/giulio/Desktop/edX-OpenGL/hw3-submissionscenes/scene6.test']  # glob.glob(filetotest_path) # ['/Users/giulio/Desktop/edX-OpenGL/hw3-submissionscenes/scene4-specular.test']
     filetotestid = zip(filetotest, range(len(filetotest)))
 
-    NUM_STRIPES = 1
+    NUM_STRIPES = 4
 
     for datatoprocess in filetotestid:
         processfile(datatoprocess)
