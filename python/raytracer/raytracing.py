@@ -77,6 +77,8 @@ def parsefile(filepath):
                 float(line[10]))  # fov
 
         # Lights and objects
+        elif cmd == 'attenuation':
+            attenuation = np.asarray([float(line[1]), float(line[2]), float(line[3])])
         elif cmd == 'directional':
             obj = Directional(np.asarray([float(line[1]), float(line[2]), float(line[3])]),  # direction
                               np.asarray([float(line[4]), float(line[5]), float(line[6])]),  # color
