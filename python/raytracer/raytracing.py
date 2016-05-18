@@ -659,9 +659,8 @@ def processstripe((scenedata, idfile, idstripe)):
 
 if __name__ == '__main__':
 
-    filetotest_path = '/Users/giulio/Desktop/edX-OpenGL/hw3-submissionscenes/*.test'
-    filetotest = [
-        '/Users/giulio/Desktop/edX-OpenGL/hw3-submissionscenes/scene6.test']  # glob.glob(filetotest_path) # ['/Users/giulio/Desktop/edX-OpenGL/hw3-submissionscenes/scene4-specular.test']
+    currpath = os.path.dirname(__file__)
+    filetotest = [os.path.join(currpath, 'test.txt')]
     filetotestid = zip(filetotest, range(len(filetotest)))
 
     NUM_STRIPES = 4
