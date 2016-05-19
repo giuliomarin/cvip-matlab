@@ -5,9 +5,10 @@ import matplotlib.pyplot as plt
 import os
 from random import shuffle
 import time
-import glob
+import sys
 from multiprocessing import Pool
 
+NUM_STRIPES = 4
 
 #################
 # Classes
@@ -567,6 +568,7 @@ def printbar(curr, total, size = 20, freq = 10, pre = ''):
         bar += ' '
     bar += ']'
     print bar + ' %d %%' % (float(curr) / float(total) * 100)
+    sys.stdout.flush()
 
 
 def processfile(filename, idfile = 0):
@@ -662,8 +664,6 @@ if __name__ == '__main__':
     currpath = os.path.dirname(__file__)
     filetotest = [os.path.join(currpath, 'test.txt')]
     filetotestid = zip(filetotest, range(len(filetotest)))
-
-    NUM_STRIPES = 4
 
     for datatoprocess in filetotestid:
         processfile(datatoprocess)
