@@ -1,12 +1,10 @@
-import numpy as np
-import matplotlib
-matplotlib.use("Agg")
-import matplotlib.pyplot as plt
 import os
-from random import shuffle
 import time
-import glob
 from multiprocessing import Pool
+from random import shuffle
+
+import matplotlib.pyplot as plt
+import numpy as np
 
 
 #################
@@ -44,27 +42,33 @@ class Parameters:
 
 
 class Light:
+    def __init__(self):
+        pass
+
     attenuation = np.asarray([1.0, 0.0, 0.0])
 
 
 class Directional(Light):
     def __init__(self, direction, color, attenuation = np.asarray([1.0, 0.0, 0.0])):
+        Light.__init__(self)
         self.direction = normalize(np.asarray(direction))
         self.color = np.asarray(color)
         self.attenuation = attenuation
 
-    def getdirection(self, p):
+    def getdirection(self, p = None):
         return -self.direction
 
-    def getdistance(self, p):
+    @staticmethod
+    def getdistance(p = None):
         return np.inf
 
-    def applytransform(self, M):
+    def applytransform(self, m):
         pass
 
 
 class Point(Light):
     def __init__(self, position, color, attenuation = np.asarray([1.0, 0.0, 0.0])):
+        Light.__init__(self)
         self.position = np.asarray(position)
         self.color = np.asarray(color)
         self.attenuation = attenuation
@@ -75,11 +79,14 @@ class Point(Light):
     def getdistance(self, p):
         return np.linalg.norm(p - self.position)
 
-    def applytransform(self, M):
+    def applytransform(self, m):
         pass
 
 
 class Object:
+    def __init__(self):
+        pass
+
     def intersect(self, ray):
         pass
 
@@ -92,6 +99,7 @@ class TriangleSet(Object):
                  specular = np.array([0.0, 0.0, 0.0]), shininess = 50.0, emission = np.array([0.0, 0.0, 0.0])):
 
         # Shape
+        Object.__init__(self)
         self.a = np.asarray(vertex[0])
         self.b = np.asarray(vertex[1])
         self.c = np.asarray(vertex[2])
@@ -110,21 +118,21 @@ class TriangleSet(Object):
     def intersect(self, ray):
         e1 = self.b - self.a
         e2 = self.c - self.a
-        P = np.cross(ray[1], e2)
-        det = np.sum(e1 * P, axis = 1)
+        p = np.cross(ray[1], e2)
+        det = np.sum(e1 * p, axis = 1)
         if all(abs(det) < 1e-6):
             return
-        T = ray[0] - self.a
-        u = np.sum(T * P, axis = 1)
+        t = ray[0] - self.a
+        u = np.sum(t * p, axis = 1)
         ok = [a and b and c for a, b, c in zip(det > 1e-6, u >= 0, u <= det)]
         if not any(ok):
             return
-        Q = np.cross(T[np.where(ok)], e1[np.where(ok)])
+        q = np.cross(t[np.where(ok)], e1[np.where(ok)])
         v = np.asarray([np.inf] * len(ok))
-        v[np.where(ok)] = np.sum(ray[1] * Q, axis = 1)
+        v[np.where(ok)] = np.sum(ray[1] * q, axis = 1)
         intersect = [a and b and c for a, b, c, in zip(ok, v >= 0, u + v <= det)]
         t = np.asarray([-1.0] * len(ok))
-        t[np.where(ok)] = np.sum(e2[np.where(ok)] * Q, axis = 1) / det[np.where(ok)]
+        t[np.where(ok)] = np.sum(e2[np.where(ok)] * q, axis = 1) / det[np.where(ok)]
         intersectfront = [a and b for a, b in zip(intersect, t > 1e-6)]
         idxvalid = np.where(intersectfront)[0]
         if len(idxvalid) == 0:
@@ -140,6 +148,7 @@ class Triangle(Object):
                  specular = np.array([0.0, 0.0, 0.0]), shininess = 50.0, emission = np.array([0.0, 0.0, 0.0])):
 
         # Shape
+        Object.__init__(self)
         self.a = np.asarray(vertex[0])
         self.b = np.asarray(vertex[1])
         self.c = np.asarray(vertex[2])
@@ -158,31 +167,31 @@ class Triangle(Object):
     def intersect(self, ray):
         e1 = self.b - self.a
         e2 = self.c - self.a
-        P = cross(ray[1], e2)
-        det = np.dot(e1, P)
+        p = cross(ray[1], e2)
+        det = np.dot(e1, p)
         if abs(det) < 1e-6:
             return np.inf
         inv_det = 1.0 / det
-        T = ray[0] - self.a
-        u = np.dot(T, P) * inv_det
+        t = ray[0] - self.a
+        u = np.dot(t, p) * inv_det
         if u < 0 or u > 1:
             return np.inf
-        Q = cross(T, e1)
-        v = np.dot(ray[1], Q) * inv_det
+        q = cross(t, e1)
+        v = np.dot(ray[1], q) * inv_det
         if v < 0 or u + v > 1:
             return np.inf
-        t = np.dot(e2, Q) * inv_det
+        t = np.dot(e2, q) * inv_det
         if t > 1e-6:
             return t
         return np.inf
 
-    def applytransform(self, M):
-        a = np.asmatrix(np.append(self.a, 1)).T
-        self.a = np.asarray(np.dot(M, a).T)[0][0:3]
-        b = np.asmatrix(np.append(self.b, 1)).T
-        self.b = np.asarray(np.dot(M, b).T)[0][0:3]
-        c = np.asmatrix(np.append(self.c, 1)).T
-        self.c = np.asarray(np.dot(M, c).T)[0][0:3]
+    def applytransform(self, m):
+        a = np.asmatrix(np.append(self.a, [1])).T
+        self.a = np.asarray(np.dot(m, a).T)[0][0:3]
+        b = np.asmatrix(np.append(self.b, [1])).T
+        self.b = np.asarray(np.dot(m, b).T)[0][0:3]
+        c = np.asmatrix(np.append(self.c, [1])).T
+        self.c = np.asarray(np.dot(m, c).T)[0][0:3]
         self.normal = normalize(cross(self.b - self.a, self.c - self.a))
 
 
@@ -190,6 +199,7 @@ class Plane(Object):
     def __init__(self, position, normal, ambient = np.array([0.0, 0.0, 0.0]), diffuse = np.array([0.0, 0.0, 0.0]),
                  specular = np.array([0.0, 0.0, 0.0]), shininess = 50.0, emission = np.array([0.0, 0.0, 0.0])):
         # Shape
+        Object.__init__(self)
         self.position = np.asarray(position)
         self.normal = np.asarray(normal)
 
@@ -210,7 +220,7 @@ class Plane(Object):
     def getnormal(self, ray):
         return self.normal
 
-    def applytransform(self, M):
+    def applytransform(self, m):
         pass
 
 
@@ -218,6 +228,7 @@ class Checkerboard(Object):
     def __init__(self, position, normal, ambient = np.array([0.0, 0.0, 0.0]), diffuse = np.array([0.0, 0.0, 0.0]),
                  specular = np.array([0.0, 0.0, 0.0]), shininess = 50.0, emission = np.array([0.0, 0.0, 0.0])):
         # Shape
+        Object.__init__(self)
         self.position = np.asarray(position)
         self.normal = np.asarray(normal)
 
@@ -238,7 +249,7 @@ class Checkerboard(Object):
     def getnormal(self, ray):
         return self.normal
 
-    def applytransform(self, M):
+    def applytransform(self, m):
         pass
 
 
@@ -247,6 +258,7 @@ class Sphere(Object):
                  specular = np.array([0.0, 0.0, 0.0]), shininess = 50.0, emission = np.array([0.0, 0.0, 0.0])):
 
         # Shape
+        Object.__init__(self)
         self.center = np.asarray(center)
         self.radius = float(radius)
 
@@ -258,23 +270,23 @@ class Sphere(Object):
         self.shininess = shininess
 
         # Transformation
-        self.M = np.asmatrix(np.eye(4, dtype = np.float32))
+        self.m = np.asmatrix(np.eye(4, dtype = np.float32))
         self.Minv = np.asmatrix(np.eye(4, dtype = np.float32))
 
     def intersect(self, ray):
         # Apply inverse transform
         ray_dist = list(ray)
-        ray0 = np.asmatrix(np.append(ray_dist[0], 1)).T
+        ray0 = np.asmatrix(np.append(ray_dist[0], [1])).T
         ray_dist[0] = np.asarray(np.dot(self.Minv, ray0).T)[0][0:3]
-        ray1 = np.asmatrix(np.append(ray_dist[1], 0)).T
+        ray1 = np.asmatrix(np.append(ray_dist[1], [0])).T
         ray_dist[1] = np.asarray(np.dot(self.Minv, ray1).T)[0][0:3]
 
         # Compute standard ray-surface intersection
         d = np.inf
         a = np.dot(ray_dist[1], ray_dist[1])
-        PS = ray_dist[0] - self.center
-        b = 2 * np.dot(ray_dist[1], PS)
-        c = np.dot(PS, PS) - self.radius ** 2
+        ps = ray_dist[0] - self.center
+        b = 2 * np.dot(ray_dist[1], ps)
+        c = np.dot(ps, ps) - self.radius ** 2
         disc = b ** 2 - 4 * a * c
         if disc > 0:
             sqdisc = np.sqrt(disc)
@@ -286,9 +298,9 @@ class Sphere(Object):
             return np.inf
 
         # Transform back to actual coordinates
-        Pdist = np.asmatrix(np.append(ray_dist[0] + d * ray_dist[1], 1)).T
-        Preal = np.asarray(np.dot(self.M, Pdist).T)[0][0:3]
-        return np.linalg.norm(Preal - ray[0])
+        pdist = np.asmatrix(np.append(ray_dist[0] + d * ray_dist[1], [1])).T
+        preal = np.asarray(np.dot(self.m, pdist).T)[0][0:3]
+        return np.linalg.norm(preal - ray[0])
 
     def getnormal(self, ray):
         if len(ray) == 2:
@@ -298,18 +310,21 @@ class Sphere(Object):
         else:
             # is a point
             point = np.asarray(ray)
-        point = np.asmatrix(np.append(point, 1)).T
+        point = np.asmatrix(np.append(point, [1])).T
         point_dist = np.asarray(np.dot(self.Minv, point).T)[0][0:3]
-        normal_dist = np.asmatrix(np.append(normalize(point_dist - self.center), 0)).T
+        normal_dist = np.asmatrix(np.append(normalize(point_dist - self.center), [0])).T
         normal = normalize(np.asarray(np.dot(self.Minv.T, normal_dist).T)[0][0:3])
         return normal
 
-    def applytransform(self, M):
-        self.M = M
-        self.Minv = np.linalg.inv(M)
+    def applytransform(self, m):
+        self.m = m
+        self.Minv = np.linalg.inv(m)
 
 
 class Scene:
+    def __init__(self):
+        pass
+
     triangles = []
     group_triangles = []
     spheres = []
@@ -329,6 +344,7 @@ class Scene:
 
     def getintersection(self, ray):
         t = np.inf
+        obj = None
 
         # Spheres
         obj_idx = -1
@@ -480,35 +496,34 @@ def parsefile(filepath):
     return camera, scene, light, param
 
 
-
 def cross(a, b):
     return np.asarray([a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]])
 
 
 def translate(x, y, z):
-    M = np.eye(4, dtype = np.float32)
-    M[0, 3] = x
-    M[1, 3] = y
-    M[2, 3] = z
-    return M
+    m = np.eye(4, dtype = np.float32)
+    m[0, 3] = x
+    m[1, 3] = y
+    m[2, 3] = z
+    return m
 
 
 def rotate(x, y, z, a):
     a = a / 180.0 * np.pi
-    R1 = np.cos(a) * np.asmatrix(np.eye(3, dtype = np.float32))
-    R2 = (1 - np.cos(a)) * np.asmatrix([[x * x, x * y, x * z], [x * y, y * y, y * z], [x * z, y * z, z * z]])
-    R3 = np.sin(a) * np.asmatrix([[0, -z, y], [z, 0, -x], [-y, x, 0]])
-    M = np.asmatrix(np.eye(4, dtype = np.float32))
-    M[0:3, 0:3] = R1 + R2 + R3
-    return M
+    r1 = np.cos(a) * np.asmatrix(np.eye(3, dtype = np.float32))
+    r2 = (1 - np.cos(a)) * np.asmatrix([[x * x, x * y, x * z], [x * y, y * y, y * z], [x * z, y * z, z * z]])
+    r3 = np.sin(a) * np.asmatrix([[0, -z, y], [z, 0, -x], [-y, x, 0]])
+    m = np.asmatrix(np.eye(4, dtype = np.float32))
+    m[0:3, 0:3] = r1 + r2 + r3
+    return m
 
 
 def scale(x, y, z):
-    M = np.asmatrix(np.eye(4, dtype = np.float32))
-    M[0, 0] = x
-    M[1, 1] = y
-    M[2, 2] = z
-    return M
+    m = np.asmatrix(np.eye(4, dtype = np.float32))
+    m[0, 0] = x
+    m[1, 1] = y
+    m[2, 2] = z
+    return m
 
 
 def normalize(x):
@@ -518,13 +533,13 @@ def normalize(x):
         return x / np.linalg.norm(x)
 
 
-# def get_color(obj, M):
+# def get_color(obj, m):
 #     color = obj['color']
 #     if not hasattr(color, '__len__'):
-#         color = color(M)
+#         color = color(m)
 #     return color
 #
-# colorplane = lambda M: (color_plane0 if (int(M[0] * 2) % 2) == (int(M[2] * 2) % 2) else color_plane1)
+# colorplane = lambda m: (color_plane0 if (int(m[0] * 2) % 2) == (int(m[2] * 2) % 2) else color_plane1)
 
 
 def trace_ray(ray, scene, light):
@@ -535,25 +550,25 @@ def trace_ray(ray, scene, light):
     obj, t = obj_intersection
 
     # Find the point of intersection on the object.
-    P = ray[0] + ray[1] * t
+    p = ray[0] + ray[1] * t
     # Find properties of the object.
-    N = obj.getnormal(P)
+    n = obj.getnormal(p)
 
     c_ray = obj.ambient + obj.emission
     # Shadow: find if the point is shadowed or not.
     for l in light:
-        l_ray = (P + N * .0001, -l.getdirection(P))
-        r = l.getdistance(P)
+        l_ray = (p + n * .0001, -l.getdirection(p))
+        r = l.getdistance(p)
         if scene.isoccluded(l_ray, r):
             continue
 
         # Computing the color.
-        H = normalize(l_ray[1] - ray[1])
+        h = normalize(l_ray[1] - ray[1])
         if r == np.inf:
             r = 0.0
         c_ray += l.color / (l.attenuation[0] + l.attenuation[1] * r + l.attenuation[2] * r ** 2) * \
-                 (obj.diffuse * max(np.dot(N, l_ray[1]), 0) + obj.specular * (max(np.dot(N, H), 0) ** obj.shininess))
-    return obj, P, N, c_ray
+                 (obj.diffuse * max(np.dot(n, l_ray[1]), 0) + obj.specular * (max(np.dot(n, h), 0) ** obj.shininess))
+    return obj, p, n, c_ray
 
 
 def printbar(curr, total, size = 20, freq = 10, pre = ''):
@@ -580,12 +595,12 @@ def processfile(filename, idfile = 0):
     camera, scene, light, param = scenedata
 
     start_time = time.time()
-    p = Pool(NUM_STRIPES)
-    results = p.map(processstripe, zip([scenedata]*NUM_STRIPES, [idfile]*NUM_STRIPES, range(NUM_STRIPES)))
+    p = Pool(num_stripes)
+    results = p.map(processstripe, zip([scenedata] * num_stripes, [idfile] * num_stripes, range(num_stripes)))
     img = sum(results)
     # img = processstripe((scenedata, 0, 0))
     printbar(1, 1, 0, pre = '[' + str(idfile) + '] ')
-    print("--- %s seconds ---" % (time.time() - start_time))
+    print "--- %s seconds ---" % (time.time() - start_time)
 
     plt.imsave(os.path.join(foldername, param.outfilename), img)
     # plt.imshow(img)
@@ -610,13 +625,13 @@ def processstripe((scenedata, idfile, idstripe)):
     # Loop through all pixels.
     col = np.zeros(3)  # Current color.
 
-    START_STRIPES = 0
-    END_STRIPES = camera.height
-    if (END_STRIPES - START_STRIPES) % NUM_STRIPES is not 0:
-        raise Exception('Impossible to divide input in %d stripes' % NUM_STRIPES)
-    SIZE_STRIPE = (END_STRIPES - START_STRIPES) / NUM_STRIPES
-    startstripe = START_STRIPES + idstripe * SIZE_STRIPE
-    endstripe = START_STRIPES + (idstripe + 1) * SIZE_STRIPE
+    start_stripes = 0
+    end_stripes = camera.height
+    if (end_stripes - start_stripes) % num_stripes is not 0:
+        raise Exception('Impossible to divide input in %d stripes' % num_stripes)
+    size_stripe = (end_stripes - start_stripes) / num_stripes
+    startstripe = start_stripes + idstripe * size_stripe
+    endstripe = start_stripes + (idstripe + 1) * size_stripe
     hrange = range(startstripe, endstripe)
     wrange = range(camera.width)
     shuffle(hrange)
@@ -640,9 +655,9 @@ def processstripe((scenedata, idfile, idstripe)):
                 traced = trace_ray(ray, scene, light)
                 if not traced:
                     break
-                obj, P, N, col_ray = traced
+                obj, p, n, col_ray = traced
                 # Reflection: create a new ray.
-                ray = (P + N * 1e-3, normalize(ray[1] - 2 * np.dot(ray[1], N) * N))
+                ray = (p + n * 1e-3, normalize(ray[1] - 2 * np.dot(ray[1], n) * n))
                 depth += 1
                 col += reflection * col_ray
                 reflection *= obj.specular
@@ -663,7 +678,7 @@ if __name__ == '__main__':
     filetotest = [os.path.join(currpath, 'test.txt')]
     filetotestid = zip(filetotest, range(len(filetotest)))
 
-    NUM_STRIPES = 4
+    num_stripes = 4
 
     for datatoprocess in filetotestid:
         processfile(datatoprocess)
