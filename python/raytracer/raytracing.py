@@ -1,11 +1,13 @@
 import os
 import time
+import sys
 from multiprocessing import Pool
-from random import shuffle
+from random import shuffle, uniform
 
 import matplotlib.pyplot as plt
 import numpy as np
 
+num_stripes = 4
 
 #################
 # Classes
@@ -582,6 +584,7 @@ def printbar(curr, total, size = 20, freq = 10, pre = ''):
         bar += ' '
     bar += ']'
     print bar + ' %d %%' % (float(curr) / float(total) * 100)
+    sys.stdout.flush()
 
 
 def processfile(filename, idfile = 0):
@@ -640,8 +643,17 @@ def processstripe((scenedata, idfile, idstripe)):
         printbar(i, len(hrange), pre = '[' + str(idfile) + '|' + str(idstripe) + '] ')
         for x in wrange:
             # Ray direction
-            a = max_x * ((x + 0.5) - camera.width / 2) / (camera.width / 2)
-            b = max_y * (camera.height / 2 - (y + 0.5)) / (camera.height / 2)
+
+            if False:
+                # Avoid aliasing
+                x_delta = uniform(0.4, 0.6)
+                y_delta = uniform(0.4, 0.6)
+            else:
+                # Center of the pixel
+                x_delta = 0.5
+                y_delta = 0.5
+            a = max_x * ((x + x_delta) - camera.width / 2) / (camera.width / 2)
+            b = max_y * (camera.height / 2 - (y + y_delta)) / (camera.height / 2)
             direction = normalize(a * c_u + b * c_v - f * c_w)
             ray = (camera.eye, direction)
 
@@ -677,8 +689,6 @@ if __name__ == '__main__':
     currpath = os.path.dirname(__file__)
     filetotest = [os.path.join(currpath, 'test.txt')]
     filetotestid = zip(filetotest, range(len(filetotest)))
-
-    num_stripes = 4
 
     for datatoprocess in filetotestid:
         processfile(datatoprocess)
