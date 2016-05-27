@@ -30,9 +30,12 @@ def imread32f(imgPath):
     if img is None:
         raise IOError('File not found: %s' % imgPath)
     # Convert it to float
-    imSize = (img.shape[0],img.shape[1])
+    imSize = (img.shape[0], img.shape[1])
     imFloat = np.zeros(imSize, np.float32)
-    imFloat.data = img.data
+    try:
+        imFloat.data = img.data
+    except:
+        raise TypeError('Image is not float32: %s' % imgPath)
 
     return imFloat
 
@@ -43,8 +46,11 @@ def imwrite32f(imgPath, img):
         \param imgPath : path to the .png image
         \img : image to store
     """
+    # Check input
+    if not (img.dtype == np.float32):
+        raise TypeError('Image is not float32')
     # Save image
-    imgToWrite = np.zeros((480, 640, 4), np.uint8)
+    imgToWrite = np.zeros((img.shape[0], img.shape[1], 4), np.uint8)
     imgToWrite.data = img.data
     cv2.imwrite(imgPath, imgToWrite)
 
