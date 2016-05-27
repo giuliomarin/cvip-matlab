@@ -3,6 +3,12 @@ os:
   - linux
 python:
   - "2.7"
+
+before_install:
+ - sudo apt-get update
+ - sudo apt-get install python-opencv
+ - sudo dpkg -L python-opencv
+
 # command to install dependencies
 install: "pip install -r python/unittests/requirements.txt"
 # command to run tests
