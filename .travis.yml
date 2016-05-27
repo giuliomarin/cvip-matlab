@@ -4,12 +4,12 @@ os:
 python:
   - "2.7"
 # command to install dependencies
-# install: "pip install -r requirements.txt"
+install: "pip install -r python/unittests/requirements.txt"
 # command to run tests
 #script: nosetests
 
 script:
-  - python python/unittests.py
+  - python python/unittests/main.py
 
 notifications:
   email: false
