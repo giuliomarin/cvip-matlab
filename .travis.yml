@@ -9,7 +9,7 @@ python:
 #script: nosetests
 
 script:
-  - python python/unittest.py
+  - python python/unittests.py
 
 notifications:
   email: false
