@@ -8,5 +8,8 @@ python:
 # command to run tests
 #script: nosetests
 
+script:
+  - python python/unittest.py
+
 notifications:
   email: false
