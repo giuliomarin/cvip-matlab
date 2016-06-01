@@ -587,29 +587,6 @@ def printbar(curr, total, size = 20, freq = 10, pre = ''):
     sys.stdout.flush()
 
 
-def processfile(filename, idfile = 0):
-    if isinstance(filename, tuple):
-        idfile = filename[1]
-        filename = filename[0]
-    print '[' + str(idfile) + '] ' + 'Processing input: %s' % filename
-
-    foldername = os.path.dirname(filename)
-    scenedata = parsefile(filename)
-    camera, scene, light, param = scenedata
-
-    start_time = time.time()
-    p = Pool(num_stripes)
-    results = p.map(processstripe, zip([scenedata] * num_stripes, [idfile] * num_stripes, range(num_stripes)))
-    img = sum(results)
-    # img = processstripe((scenedata, 0, 0))
-    printbar(1, 1, 0, pre = '[' + str(idfile) + '] ')
-    print "--- %s seconds ---" % (time.time() - start_time)
-
-    plt.imsave(os.path.join(foldername, param.outfilename), img)
-    # plt.imshow(img)
-    # plt.show()
-
-
 # Parallelize calls
 def processstripe((scenedata, idfile, idstripe)):
     camera, scene, light, param = scenedata
@@ -678,6 +655,28 @@ def processstripe((scenedata, idfile, idstripe)):
             img[y, x, :] = np.clip(col, 0, 1)
     return img
 
+
+def processfile(filename, idfile = 0):
+    if isinstance(filename, tuple):
+        idfile = filename[1]
+        filename = filename[0]
+    print '[' + str(idfile) + '] ' + 'Processing input: %s' % filename
+
+    foldername = os.path.dirname(filename)
+    scenedata = parsefile(filename)
+    camera, scene, light, param = scenedata
+
+    start_time = time.time()
+    p = Pool(num_stripes)
+    results = p.map(processstripe, zip([scenedata] * num_stripes, [idfile] * num_stripes, range(num_stripes)))
+    img = sum(results)
+    # img = processstripe((scenedata, 0, 0))
+    printbar(1, 1, 0, pre = '[' + str(idfile) + '] ')
+    print "--- %s seconds ---" % (time.time() - start_time)
+
+    plt.imsave(os.path.join(foldername, param.outfilename), img)
+    # plt.imshow(img)
+    # plt.show()
 
 #################
 # Main
