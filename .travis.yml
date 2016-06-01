@@ -1,19 +1,19 @@
 language: python
+
 os:
   - linux
+  
 python:
   - "2.7"
 
 before_install:
- - sudo apt-get update
- - sudo apt-get install python-opencv
- - sudo dpkg -L python-opencv
- - export PYTHONPATH=/usr/lib/pyshared/python2.7:$PYTHONPATH
+  - sudo apt-get update
+  - sudo apt-get install python-opencv
+  - sudo dpkg -L python-opencv
+  - export PYTHONPATH=/usr/lib/pyshared/python2.7:$PYTHONPATH
 
-# command to install dependencies
-install: "pip install -r python/unittests/requirements.txt"
-# command to run tests
-#script: nosetests
+install:
+  - sudo apt-get install python-matplotlib
 
 script:
   - python python/unittests/main.py
