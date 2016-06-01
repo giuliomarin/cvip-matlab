@@ -7,20 +7,14 @@ python:
   - "2.7"
 
 before_install:
-  - ls /usr/lib/python2.7/dist-packages
-  - ls /usr/local/lib/python2.7/site-packages
-  - ls /usr/local/lib/python2.7/dist-packages
   - sudo apt-get update
   - sudo apt-get install python-opencv
   - sudo dpkg -L python-opencv
-  - export PYTHONPATH=/usr/lib/pyshared/python2.7:/usr/lib/python2.7/dist-packages:$PYTHONPATH
-  - sudo pip install numpy
+  - export PYTHONPATH=/usr/lib/pyshared/python2.7:/usr/local/lib/python2.7/dist-packages:$PYTHONPATH
   - sudo pip install matplotlib
+  - sudo pip install numpy
   - echo $PATH
   - echo $PYTHONPATH
-  - ls /usr/lib/python2.7/dist-packages
-  - ls /usr/local/lib/python2.7/site-packages
-  - ls /usr/local/lib/python2.7/dist-packages
 
 script:
   - python python/unittests/main.py
