@@ -111,6 +111,7 @@ def tostr(arr, prec = 3):
 
 
 def getoptimalimg(img):
+    img = np.sqrt(img)
     img /= max(img.flatten())
     img *= 255.0
     return img.astype(np.uint8)
