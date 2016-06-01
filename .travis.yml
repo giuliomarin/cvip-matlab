@@ -8,6 +8,8 @@ python:
 
 before_install:
   - ls /usr/lib/python2.7/dist-packages
+  - ls /usr/local/lib/python2.7/site-packages
+  - ls /usr/local/lib/python2.7/dist-packages
   - sudo apt-get update
   - sudo apt-get install python-opencv
   - sudo dpkg -L python-opencv
@@ -16,6 +18,9 @@ before_install:
   - sudo apt-get install python-matplotlib
   - echo $PATH
   - echo $PYTHONPATH
+  - ls /usr/lib/python2.7/dist-packages
+  - ls /usr/local/lib/python2.7/site-packages
+  - ls /usr/local/lib/python2.7/dist-packages
 
 script:
   - python python/unittests/main.py
