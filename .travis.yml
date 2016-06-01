@@ -13,6 +13,8 @@ before_install:
   - export PYTHONPATH=/usr/lib/pyshared/python2.7:$PYTHONPATH
   - sudo apt-get install python-numpy
   - sudo apt-get install python-matplotlib
+  - echo $PATH
+  - echo $PYTHONPATH
 
 script:
   - python python/unittests/main.py
