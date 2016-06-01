@@ -14,8 +14,8 @@ before_install:
   - sudo apt-get install python-opencv
   - sudo dpkg -L python-opencv
   - export PYTHONPATH=/usr/lib/pyshared/python2.7:/usr/lib/python2.7/dist-packages:$PYTHONPATH
-  - sudo apt-get install python-numpy
-  - sudo apt-get install python-matplotlib
+  - sudo pip install numpy
+  - sudo pip install matplotlib
   - echo $PATH
   - echo $PYTHONPATH
   - ls /usr/lib/python2.7/dist-packages
