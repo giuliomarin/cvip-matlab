@@ -325,7 +325,7 @@ idx = randrange(len(images[0]))
 img_l, gray_l = getimage(images[0][idx])
 img_r, gray_r = getimage(images[1][idx])
 
-img_l, gray_l = getimage('/Users/giulio/Library/Application Support/Aquifi/2/img2_1.png')
+img_l, gray_l = getimage('/Users/giulio/Library/Application Support/Aquifi/2/img1_1.png')
 img_r, gray_r = getimage('/Users/giulio/Library/Application Support/Aquifi/2/img0_1.png')
 
 imgRect_l = cv2.remap(img_l, rectMap[0][0], rectMap[0][1], cv2.INTER_CUBIC)
@@ -338,6 +338,9 @@ imgtoshow = np.hstack((imgtoshow_l, imgtoshow_r))
 lines = [((0, int(r)), (imgtoshow.shape[1], int(r)), (uniform(0,255), uniform(0,255), uniform(0,255))) for r in np.linspace(0, imgtoshow.shape[0], 20)]
 for pt in lines:
     cv2.line(imgtoshow, pt[0], pt[1], pt[2], 1)
+
+cv2.imwrite('/Users/giulio/Library/Application Support/Aquifi/2/imgrect1_1.png', imgRect_l)
+cv2.imwrite('/Users/giulio/Library/Application Support/Aquifi/2/imgrect0_1.png', imgRect_r)
 
 cv2.imshow('curr img', imgtoshow)
 cv2.waitKey(0)

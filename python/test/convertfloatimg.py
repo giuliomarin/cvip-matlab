@@ -11,7 +11,7 @@ os.chdir(currPath)
 
 # import utils
 sys.path.append(currPath)
-import dataio
+import cvip.dataio
 
 def invertColorMap(ax):
     currCM = ax.get_cmap().name
@@ -28,9 +28,12 @@ def createImagesc(img):
         if event.key == 'escape':
             sys.exit(0)
         elif event.key == ' ':
-            # img8bit = cv2.convertScaleAbs(img, 255.0 / (currMax - currMin), - currMin * 255.0 / (currMax - currMin))
+            img_crop, currMin, currMax = update(event)
+            img8bit = cv2.convertScaleAbs(img_crop, alpha = 255.0 / (currMax - currMin), beta = - currMin * 255.0 / (currMax - currMin))
+            plt.imsave(os.path.join(currPath, 'converted.png'), img8bit, cmap = 'gray')
             print 'saved'
 
+    img = np.sqrt(img)
     img /= max(img.flatten())
 
     minVal, maxVal, _, _ = cv2.minMaxLoc(img)
@@ -73,6 +76,7 @@ def createImagesc(img):
         ax_hist.cla()
         ax_hist.hist(img_crop.flatten(), 50, histtype = 'stepfilled', normed = True)
         fig_hist.canvas.draw()
+        return img_crop, currMin, currMax
     smin.on_changed(update)
     smax.on_changed(update)
 
@@ -96,8 +100,8 @@ def createImagesc(img):
 
 if __name__ == '__main__':
     if len(sys.argv) < 2:
-        sys.argv.append('samples/images/depth.png')
+        sys.argv.append('/Users/giulio/Library/Application Support/Aquifi/2/img2_1.png')
 
     imgPath = sys.argv[1]
-    img = dataio.imread32f(imgPath)
+    img = cvip.dataio.imread32f(imgPath)
     createImagesc(img)
