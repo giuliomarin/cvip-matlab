@@ -1,6 +1,6 @@
-#################
-## MATLAB
-#################
+# MATLAB
+.m~
+.asv
 
-*.m~
-*.asv
+# MacOS
+.DS_Store
