@@ -47,6 +47,8 @@ classdef stereobm < handle
             % Convert to 1 channel image.
             if size(left, 3) > 1
                 left = rgb2gray(left);
+            end
+            if size(right, 3) > 1
                 right = rgb2gray(right);
             end
             
